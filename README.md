@@ -173,4 +173,4 @@ Power BI Desktop | DAX | Power Query (M) | TMDL | Power BI Project (PBIP) | Azur
 
 **João Paúra** | Senior Data Analyst | BI Specialist
 
-[LinkedIn](https://www.linkedin.com/in/YOUR-PROFILE) | [Portfolio](https://YOUR-WEBSITE)
+[LinkedIn](https://www.linkedin.com/in/joaopaura/) | [Portfolio](jpanalysis.pages.dev)
