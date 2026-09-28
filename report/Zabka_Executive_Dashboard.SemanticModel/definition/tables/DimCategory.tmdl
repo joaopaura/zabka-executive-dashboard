@@ -1,0 +1,84 @@
+table DimCategory
+	lineageTag: b42abf3a-a20f-4da2-aafb-d4baf2f69192
+
+	column CategoryID
+		dataType: string
+		lineageTag: aa4dd090-566d-4d56-ac6b-1b2681d9d5c2
+		summarizeBy: none
+		sourceColumn: CategoryID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Category
+		dataType: string
+		lineageTag: 5ce77b05-c200-4ea9-9710-5462a8e203f5
+		summarizeBy: none
+		sourceColumn: Category
+		sortByColumn: SortOrder
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column CategoryGroup
+		dataType: string
+		lineageTag: b33810b2-0af7-49ae-b9f1-e4e71a00a708
+		summarizeBy: none
+		sourceColumn: CategoryGroup
+
+		annotation SummarizationSetBy = Automatic
+
+	column TargetGrossMargin
+		dataType: double
+		lineageTag: 4baa9e6a-8bd5-4dca-9e0e-ef0edbec0980
+		summarizeBy: sum
+		sourceColumn: TargetGrossMargin
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column IsFresh
+		dataType: int64
+		formatString: 0
+		lineageTag: a10de1da-63cd-466a-a826-36136629edd7
+		summarizeBy: sum
+		sourceColumn: IsFresh
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsStrategicGrowth
+		dataType: int64
+		formatString: 0
+		lineageTag: 7e7f2d39-a37e-4a65-a1a1-af49c73e8d4b
+		summarizeBy: sum
+		sourceColumn: IsStrategicGrowth
+
+		annotation SummarizationSetBy = Automatic
+
+	column SortOrder
+		dataType: int64
+		formatString: 0
+		lineageTag: 0a900fea-93d8-42e5-b996-7f19b18879ef
+		summarizeBy: sum
+		sourceColumn: SortOrder
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimCategory = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ProjectPath & "Data\DimCategory.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Types = Table.TransformColumnTypes(Headers, {
+				        {"CategoryID", type text}, {"Category", type text}, {"CategoryGroup", type text},
+				        {"TargetGrossMargin", type number}, {"IsFresh", Int64.Type},
+				        {"IsStrategicGrowth", Int64.Type}, {"SortOrder", Int64.Type}}, "en-US")
+				in
+				    Types
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

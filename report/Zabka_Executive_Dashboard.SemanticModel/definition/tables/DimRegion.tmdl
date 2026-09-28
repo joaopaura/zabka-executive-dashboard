@@ -1,0 +1,51 @@
+table DimRegion
+	lineageTag: 6aff73de-d7c6-43a2-b630-75c1fe5f7e74
+
+	column RegionID
+		dataType: string
+		lineageTag: 6f41f319-2ad6-4039-a8ec-aa436a8ea0b5
+		summarizeBy: none
+		sourceColumn: RegionID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: f9c4846e-8a97-4bcb-8b9b-a5941879d87b
+		summarizeBy: none
+		sourceColumn: Region
+
+		annotation SummarizationSetBy = Automatic
+
+	column RegionalDirector
+		dataType: string
+		lineageTag: 5284ef76-e459-4533-9526-d111488fc197
+		summarizeBy: none
+		sourceColumn: RegionalDirector
+
+		annotation SummarizationSetBy = Automatic
+
+	column RegionalHQ
+		dataType: string
+		lineageTag: 98f5e451-0294-43c6-ab2e-a6b4a5c9b617
+		summarizeBy: none
+		sourceColumn: RegionalHQ
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimRegion = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ProjectPath & "Data\DimRegion.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Types = Table.TransformColumnTypes(Headers, {
+				        {"RegionID", type text}, {"Region", type text},
+				        {"RegionalDirector", type text}, {"RegionalHQ", type text}}, "en-US")
+				in
+				    Types
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

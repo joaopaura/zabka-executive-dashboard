@@ -1,0 +1,84 @@
+expression 'Arquivo de exemplo' =
+		let
+		  Origem = Folder.Files("C:\Users\Gustavo Antelo\Desktop\João Paúra\Portfólio Data_Analyst_Poland\Zabka\DailySales"),
+		  #"Arquivos ocultos filtrados" = Table.SelectRows(Origem, each [Attributes]?[Hidden]? <> true),
+		  Navegação = #"Arquivos ocultos filtrados"{0}[Content]
+		in
+		  Navegação
+	lineageTag: 8b1eafd1-417c-4c7a-8d39-db15e41bae81
+	queryGroup: 'Transformar o arquivo de DailySales\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+
+expression Parâmetro =
+		let
+		  Parâmetro = #"Arquivo de exemplo" meta [IsParameterQuery = true, IsParameterQueryRequired = false, Type = type binary, BinaryIdentifier = #"Arquivo de exemplo"]
+		in
+		  Parâmetro
+	lineageTag: cf59860a-4ef3-41aa-8c69-8a1f0cce56d4
+	queryGroup: 'Transformar o arquivo de DailySales\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+
+expression 'Transformar Arquivo de exemplo' =
+		let
+		  Origem = Csv.Document(Parâmetro, [Delimiter = ",", Columns = 10, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+		  #"Cabeçalhos promovidos" = Table.PromoteHeaders(Origem, [PromoteAllScalars = true])
+		in
+		  #"Cabeçalhos promovidos"
+	lineageTag: 9fa76e36-44ea-4112-88f2-b5ad268bbd4f
+	queryGroup: 'Transformar o arquivo de DailySales'
+
+	annotation PBI_ResultType = Table
+
+expression 'Transformar o arquivo' =
+		let
+		    Fonte = (Parâmetro as binary) => let
+		  Origem = Csv.Document(Parâmetro, [Delimiter = ",", Columns = 10, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+		  #"Cabeçalhos promovidos" = Table.PromoteHeaders(Origem, [PromoteAllScalars = true])
+		in
+		  #"Cabeçalhos promovidos"
+		in
+		    Fonte
+	lineageTag: bd9abaf5-8efc-4aea-8eb3-a3ece79f470b
+	queryGroup: 'Transformar o arquivo de DailySales\Consultas auxiliares'
+
+	annotation PBI_ResultType = Function
+
+expression 'Parâmetro (2)' =
+		let
+		  Parâmetro = #"Arquivo de exemplo" meta [IsParameterQuery = true, IsParameterQueryRequired = false, Type = type binary, BinaryIdentifier = #"Arquivo de exemplo"]
+		in
+		  Parâmetro
+	lineageTag: 4f068c22-c449-4e24-8d57-234e3298f805
+	queryGroup: 'Transformar o arquivo de DailySales\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+
+expression ProjectPath = "C:\Portfolio\Zabka\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 50ab459d-0ad5-4b58-ab2d-863af6ed9784
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Text
+
+expression 'Parâmetro (3)' =
+		let
+		  Parâmetro = #"Arquivo de exemplo" meta [IsParameterQuery = true, IsParameterQueryRequired = false, Type = type binary, BinaryIdentifier = #"Arquivo de exemplo"]
+		in
+		  Parâmetro
+	lineageTag: 7351e024-decf-40b8-bd6d-cbc0ce3594d4
+	queryGroup: 'Transformar o arquivo de DailySales\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+
+expression 'Parâmetro (4)' =
+		let
+		  Parâmetro = #"Arquivo de exemplo" meta [IsParameterQuery = true, IsParameterQueryRequired = false, Type = type binary, BinaryIdentifier = #"Arquivo de exemplo"]
+		in
+		  Parâmetro
+	lineageTag: 782899ab-0c4a-48f0-bc27-95c512f3dcab
+	queryGroup: 'Transformar o arquivo de DailySales\Consultas auxiliares'
+
+	annotation PBI_ResultType = Binary
+

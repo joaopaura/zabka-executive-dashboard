@@ -1,0 +1,813 @@
+createOrReplace
+
+	ref table _Measures
+
+		/// Last date with actual sales in the dataset.
+		measure 'Last Actual Date' = CALCULATE ( MAX ( FactDailySales[Date] ), ALL ( FactDailySales ) )
+			formatString: dd mmm yyyy
+			displayFolder: 00 Base
+
+		/// First date with actual sales in the dataset.
+		measure 'First Actual Date' = CALCULATE ( MIN ( FactDailySales[Date] ), ALL ( FactDailySales ) )
+			formatString: dd mmm yyyy
+			displayFolder: 00 Base
+
+		/// Number of store-days with sales (rows in FactDailySales).
+		measure 'Store Trading Days' = COUNTROWS ( FactDailySales )
+			formatString: #,0
+			displayFolder: 00 Base
+
+		/// Net sales excl. VAT (PLN).
+		measure 'Net Sales' = SUM ( FactDailySales[NetSales] )
+			formatString: #,0
+			displayFolder: 01 Sales
+
+		/// Number of receipts.
+		measure 'Total Transactions' = SUM ( FactDailySales[Transactions] )
+			formatString: #,0
+			displayFolder: 01 Sales
+
+		/// Number of items scanned.
+		measure 'Items Sold' = SUM ( FactDailySales[ItemsSold] )
+			formatString: #,0
+			displayFolder: 01 Sales
+
+		/// Average net sales per transaction (PLN).
+		measure 'Avg Basket' = DIVIDE ( [Net Sales], [Total Transactions] )
+			formatString: #,0.00
+			displayFolder: 01 Sales
+
+		/// Average items per transaction.
+		measure 'Items per Basket' = DIVIDE ( [Items Sold], [Total Transactions] )
+			formatString: #,0.00
+			displayFolder: 01 Sales
+
+		/// Net sales sold under promotion.
+		measure 'Promo Sales' = SUM ( FactDailySales[PromoSales] )
+			formatString: #,0
+			displayFolder: 01 Sales
+
+		/// Share of net sales sold under promotion.
+		measure 'Promo Share %' = DIVIDE ( [Promo Sales], [Net Sales] )
+			formatString: 0.0%
+			displayFolder: 01 Sales
+
+		/// Net sales per store per trading day (PLN).
+		measure 'Avg Daily Sales per Store' = DIVIDE ( [Net Sales], [Store Trading Days] )
+			formatString: #,0
+			displayFolder: 01 Sales
+
+		/// Net sales per square metre per trading day (PLN).
+		measure 'Sales per sqm (Daily)' = DIVIDE ( [Net Sales], SUMX ( FactDailySales, RELATED ( DimStore[SalesAreaSqm] ) ) )
+			formatString: #,0.0
+			displayFolder: 01 Sales
+
+		/// Avg store sales on non-trading Sundays vs regular weekdays.
+		measure 'Non-Trading Sunday Uplift %' =
+				VAR _Sunday = CALCULATE ( [Avg Daily Sales per Store], DimDate[IsNonTradingSunday] = 1 )
+				VAR _Weekday = CALCULATE ( [Avg Daily Sales per Store], DimDate[IsWeekend] = 0, DimDate[IsHoliday] = 0 )
+				RETURN DIVIDE ( _Sunday, _Weekday ) - 1
+			formatString: 0.0%
+			displayFolder: 01 Sales
+
+		/// Net sales minus COGS (PLN).
+		measure 'Gross Profit' = SUM ( FactDailySales[GrossProfit] )
+			formatString: #,0
+			displayFolder: 02 Profitability
+
+		/// Cost of goods sold (PLN).
+		measure 'Total COGS' = SUM ( FactDailySales[COGS] )
+			formatString: #,0
+			displayFolder: 02 Profitability
+
+		/// Gross profit as % of net sales.
+		measure 'Gross Margin %' = DIVIDE ( [Gross Profit], [Net Sales] )
+			formatString: 0.0%
+			displayFolder: 02 Profitability
+
+		/// Total store operating costs (PLN).
+		measure 'Store Opex' =
+				SUM ( FactStoreOpex[RentCost] ) + SUM ( FactStoreOpex[EnergyCost] )
+					+ SUM ( FactStoreOpex[FranchiseeCommission] ) + SUM ( FactStoreOpex[MarketingCost] )
+					+ SUM ( FactStoreOpex[TechnologyCost] ) + SUM ( FactStoreOpex[OtherOpex] )
+			formatString: #,0
+			displayFolder: 02 Profitability
+
+		/// Store rent (PLN).
+		measure 'Rent Cost' = SUM ( FactStoreOpex[RentCost] )
+			formatString: #,0
+			displayFolder: 02 Profitability
+
+		/// Store energy (PLN).
+		measure 'Energy Cost' = SUM ( FactStoreOpex[EnergyCost] )
+			formatString: #,0
+			displayFolder: 02 Profitability
+
+		/// Commission paid to franchisees (PLN).
+		measure 'Franchisee Commission' = SUM ( FactStoreOpex[FranchiseeCommission] )
+			formatString: #,0
+			displayFolder: 02 Profitability
+
+		/// Store opex as % of net sales.
+		measure 'Opex % of Sales' = DIVIDE ( [Store Opex], [Net Sales] )
+			formatString: 0.0%
+			displayFolder: 02 Profitability
+
+		/// Gross profit minus store opex (PLN).
+		measure 'Store EBITDA' = [Gross Profit] - [Store Opex]
+			formatString: #,0
+			displayFolder: 02 Profitability
+
+		/// Store EBITDA as % of net sales.
+		measure 'Store EBITDA Margin %' = DIVIDE ( [Store EBITDA], [Net Sales] )
+			formatString: 0.0%
+			displayFolder: 02 Profitability
+
+		/// Net Sales in the same period of the previous year (actual period only).
+		measure 'Net Sales PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [Net Sales], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: #,0
+			displayFolder: 03 Time Intelligence\PY
+
+		/// Gross Profit in the same period of the previous year (actual period only).
+		measure 'Gross Profit PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [Gross Profit], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: #,0
+			displayFolder: 03 Time Intelligence\PY
+
+		/// Total Transactions in the same period of the previous year (actual period only).
+		measure 'Total Transactions PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [Total Transactions], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: #,0
+			displayFolder: 03 Time Intelligence\PY
+
+		/// Store EBITDA in the same period of the previous year (actual period only).
+		measure 'Store EBITDA PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [Store EBITDA], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: #,0
+			displayFolder: 03 Time Intelligence\PY
+
+		/// Average basket in the same period of the previous year.
+		measure 'Avg Basket PY' = DIVIDE ( [Net Sales PY], [Total Transactions PY] )
+			formatString: #,0.00
+			displayFolder: 03 Time Intelligence\PY
+
+		/// Gross margin % in the same period of the previous year.
+		measure 'Gross Margin % PY' = DIVIDE ( [Gross Profit PY], [Net Sales PY] )
+			formatString: 0.0%
+			displayFolder: 03 Time Intelligence\PY
+
+		/// Store EBITDA margin in the same period of the previous year.
+		measure 'Store EBITDA Margin % PY' = DIVIDE ( [Store EBITDA PY], [Net Sales PY] )
+			formatString: 0.0%
+			displayFolder: 03 Time Intelligence\PY
+
+		/// Absolute change vs previous year (PLN).
+		measure 'Net Sales YoY' = [Net Sales] - [Net Sales PY]
+			formatString: #,0
+			displayFolder: 03 Time Intelligence\YoY
+
+		/// Net sales growth vs previous year.
+		measure 'Net Sales YoY %' = DIVIDE ( [Net Sales] - [Net Sales PY], [Net Sales PY] )
+			formatString: 0.0%
+			displayFolder: 03 Time Intelligence\YoY
+
+		/// Gross profit growth vs previous year.
+		measure 'Gross Profit YoY %' = DIVIDE ( [Gross Profit] - [Gross Profit PY], [Gross Profit PY] )
+			formatString: 0.0%
+			displayFolder: 03 Time Intelligence\YoY
+
+		/// Transactions growth vs previous year.
+		measure 'Total Transactions YoY %' = DIVIDE ( [Total Transactions] - [Total Transactions PY], [Total Transactions PY] )
+			formatString: 0.0%
+			displayFolder: 03 Time Intelligence\YoY
+
+		/// Average basket growth vs previous year.
+		measure 'Avg Basket YoY %' = DIVIDE ( [Avg Basket] - [Avg Basket PY], [Avg Basket PY] )
+			formatString: 0.0%
+			displayFolder: 03 Time Intelligence\YoY
+
+		/// Change in gross margin vs previous year, in percentage points.
+		measure 'Gross Margin YoY (pp)' = ( [Gross Margin %] - [Gross Margin % PY] ) * 100
+			formatString: +0.0;-0.0;0.0
+			displayFolder: 03 Time Intelligence\YoY
+
+		/// Change in store EBITDA margin vs previous year, in percentage points.
+		measure 'Store EBITDA Margin YoY (pp)' = ( [Store EBITDA Margin %] - [Store EBITDA Margin % PY] ) * 100
+			formatString: +0.0;-0.0;0.0
+			displayFolder: 03 Time Intelligence\YoY
+
+		/// Like-for-like growth: stores open for 12+ months before the period start and not closed.
+		measure 'LFL Growth %' =
+				VAR _Start = MIN ( DimDate[Date] )
+				VAR _End = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+				VAR _Cut = EDATE ( _Start, -12 )
+				VAR _Stores =
+					FILTER (
+						DimStore,
+						DimStore[OpeningDate] <= _Cut
+							&& ( ISBLANK ( DimStore[ClosingDate] ) || DimStore[ClosingDate] > _End )
+					)
+				VAR _Current = CALCULATE ( [Net Sales], _Stores )
+				VAR _Previous = CALCULATE ( [Net Sales PY], _Stores )
+				RETURN DIVIDE ( _Current - _Previous, _Previous )
+			formatString: 0.0%
+			displayFolder: 03 Time Intelligence\YoY
+
+		/// Year-to-date net sales.
+		measure 'Net Sales YTD' = IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), CALCULATE ( [Net Sales], DATESYTD ( DimDate[Date] ) ) )
+			formatString: #,0
+			displayFolder: 03 Time Intelligence\YTD
+
+		/// Previous year-to-date net sales (same days).
+		measure 'Net Sales PY YTD' = IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), CALCULATE ( [Net Sales PY], DATESYTD ( DimDate[Date] ) ) )
+			formatString: #,0
+			displayFolder: 03 Time Intelligence\YTD
+
+		/// YTD growth vs previous YTD.
+		measure 'Net Sales YTD YoY %' = DIVIDE ( [Net Sales YTD] - [Net Sales PY YTD], [Net Sales PY YTD] )
+			formatString: 0.0%
+			displayFolder: 03 Time Intelligence\YTD
+
+		/// Year-to-date gross profit.
+		measure 'Gross Profit YTD' = IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), CALCULATE ( [Gross Profit], DATESYTD ( DimDate[Date] ) ) )
+			formatString: #,0
+			displayFolder: 03 Time Intelligence\YTD
+
+		/// Net sales in the previous month.
+		measure 'Net Sales PM' = CALCULATE ( [Net Sales], DATEADD ( DimDate[Date], -1, MONTH ) )
+			formatString: #,0
+			displayFolder: 03 Time Intelligence\MoM
+
+		/// Net sales growth vs previous month.
+		measure 'Net Sales MoM %' = IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), DIVIDE ( [Net Sales] - [Net Sales PM], [Net Sales PM] ) )
+			formatString: 0.0%
+			displayFolder: 03 Time Intelligence\MoM
+
+		/// Rolling 12-month net sales.
+		measure 'Net Sales R12M' =
+				VAR _Last = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+				RETURN
+					IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), CALCULATE ( [Net Sales], DATESINPERIOD ( DimDate[Date], _Last, -12, MONTH ) ) )
+			formatString: #,0
+			displayFolder: 03 Time Intelligence\Rolling
+
+		/// Average monthly net sales over the last 3 months.
+		measure 'Net Sales 3M Avg' =
+				VAR _Last = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+				RETURN
+					IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), CALCULATE ( [Net Sales], DATESINPERIOD ( DimDate[Date], _Last, -3, MONTH ) ) / 3 )
+			formatString: #,0
+			displayFolder: 03 Time Intelligence\Rolling
+
+		/// Budget (Region x Category x Month). Blank when filtered by store or franchisee.
+		measure 'Budget Net Sales' =
+				IF (
+					ISFILTERED ( DimStore ) || ISFILTERED ( DimFranchisee ),
+					BLANK (),
+					SUM ( FactBudget[BudgetNetSales] )
+				)
+			formatString: #,0
+			displayFolder: 04 Budget
+
+		/// Gross profit budget. Blank when filtered by store or franchisee.
+		measure 'Budget Gross Profit' =
+				IF (
+					ISFILTERED ( DimStore ) || ISFILTERED ( DimFranchisee ),
+					BLANK (),
+					SUM ( FactBudget[BudgetGrossProfit] )
+				)
+			formatString: #,0
+			displayFolder: 04 Budget
+
+		/// Budget limited to months with actuals, for fair comparison.
+		measure 'Budget Net Sales (Actual Period)' = CALCULATE ( [Budget Net Sales], KEEPFILTERS ( DimDate[IsActualPeriod] = 1 ) )
+			formatString: #,0
+			displayFolder: 04 Budget
+
+		/// GP budget limited to months with actuals.
+		measure 'Budget Gross Profit (Actual Period)' = CALCULATE ( [Budget Gross Profit], KEEPFILTERS ( DimDate[IsActualPeriod] = 1 ) )
+			formatString: #,0
+			displayFolder: 04 Budget
+
+		/// Actual minus budget (PLN). Uses category-level sales to support category filters.
+		measure 'Sales vs Budget' = [Category Sales] - [Budget Net Sales (Actual Period)]
+			formatString: #,0
+			displayFolder: 04 Budget
+
+		/// Actual vs budget variance %.
+		measure 'Sales vs Budget %' = DIVIDE ( [Sales vs Budget], [Budget Net Sales (Actual Period)] )
+			formatString: 0.0%
+			displayFolder: 04 Budget
+
+		/// Actual as % of budget.
+		measure 'Budget Achievement %' = DIVIDE ( [Category Sales], [Budget Net Sales (Actual Period)] )
+			formatString: 0.0%
+			displayFolder: 04 Budget
+
+		/// Gross profit variance vs budget.
+		measure 'Gross Profit vs Budget %' =
+				DIVIDE (
+					[Category Gross Profit] - [Budget Gross Profit (Actual Period)],
+					[Budget Gross Profit (Actual Period)]
+				)
+			formatString: 0.0%
+			displayFolder: 04 Budget
+
+		/// Full-year budget for the selected year.
+		measure 'Budget Net Sales FY' =
+				VAR _Year = MAX ( DimDate[Year] )
+				RETURN CALCULATE ( [Budget Net Sales], ALL ( DimDate ), DimDate[Year] = _Year )
+			formatString: #,0
+			displayFolder: 04 Budget
+
+		/// Full-year outlook: YTD actuals + budget for the remaining months.
+		measure 'FY Outlook' =
+				VAR _Year = MAX ( DimDate[Year] )
+				VAR _Actual = CALCULATE ( [Category Sales], ALL ( DimDate ), DimDate[Year] = _Year )
+				VAR _Remaining = CALCULATE ( [Budget Net Sales], ALL ( DimDate ), DimDate[Year] = _Year, DimDate[IsActualPeriod] = 0 )
+				RETURN _Actual + _Remaining
+			formatString: #,0
+			displayFolder: 04 Budget
+
+		/// Full-year outlook vs full-year budget.
+		measure 'FY Outlook vs Budget %' = DIVIDE ( [FY Outlook] - [Budget Net Sales FY], [Budget Net Sales FY] )
+			formatString: 0.0%
+			displayFolder: 04 Budget
+
+		/// Net sales from FactCategorySales (monthly grain, supports category filters).
+		measure 'Category Sales' = SUM ( FactCategorySales[NetSales] )
+			formatString: #,0
+			displayFolder: 05 Category
+
+		/// Gross profit from FactCategorySales.
+		measure 'Category Gross Profit' = SUM ( FactCategorySales[GrossProfit] )
+			formatString: #,0
+			displayFolder: 05 Category
+
+		/// Gross margin by category.
+		measure 'Category Gross Margin %' = DIVIDE ( [Category Gross Profit], [Category Sales] )
+			formatString: 0.0%
+			displayFolder: 05 Category
+
+		/// Units sold.
+		measure 'Units Sold' = SUM ( FactCategorySales[UnitsSold] )
+			formatString: #,0
+			displayFolder: 05 Category
+
+		/// Share of total sales within the current selection.
+		measure 'Category Mix %' = DIVIDE ( [Category Sales], CALCULATE ( [Category Sales], ALL ( DimCategory ) ) )
+			formatString: 0.0%
+			displayFolder: 05 Category
+
+		/// Category sales in the same period of the previous year.
+		measure 'Category Sales PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [Category Sales], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: #,0
+			displayFolder: 05 Category
+
+		/// Category sales growth vs previous year.
+		measure 'Category Sales YoY %' = DIVIDE ( [Category Sales] - [Category Sales PY], [Category Sales PY] )
+			formatString: 0.0%
+			displayFolder: 05 Category
+
+		/// Category mix in the previous year.
+		measure 'Category Mix % PY' = DIVIDE ( [Category Sales PY], CALCULATE ( [Category Sales PY], ALL ( DimCategory ) ) )
+			formatString: 0.0%
+			displayFolder: 05 Category
+
+		/// Change in category mix vs previous year, in percentage points.
+		measure 'Category Mix Change (pp)' = ( [Category Mix %] - [Category Mix % PY] ) * 100
+			formatString: +0.0;-0.0;0.0
+			displayFolder: 05 Category
+
+		/// Value of written-off products (PLN).
+		measure 'Waste Value' = SUM ( FactCategorySales[WasteValue] )
+			formatString: #,0
+			displayFolder: 05 Category\Waste
+
+		/// Waste as % of category sales.
+		measure 'Waste % of Sales' = DIVIDE ( [Waste Value], [Category Sales] )
+			formatString: 0.00%
+			displayFolder: 05 Category\Waste
+
+		/// Waste % for fresh categories (Ready Meals, Fresh & Dairy, Bakery).
+		measure 'Fresh Waste %' = CALCULATE ( [Waste % of Sales], DimCategory[IsFresh] = 1 )
+			formatString: 0.00%
+			displayFolder: 05 Category\Waste
+
+		/// Fresh waste % in the previous year.
+		measure 'Fresh Waste % PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [Fresh Waste %], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: 0.00%
+			displayFolder: 05 Category\Waste
+
+		/// Change in fresh waste % vs previous year, in percentage points.
+		measure 'Fresh Waste Change (pp)' = ( [Fresh Waste %] - [Fresh Waste % PY] ) * 100
+			formatString: +0.00;-0.00;0.00
+			displayFolder: 05 Category\Waste
+
+		/// Sales of own-brand products (PLN).
+		measure 'Private Label Sales' = SUM ( FactCategorySales[PrivateLabelSales] )
+			formatString: #,0
+			displayFolder: 05 Category\Private Label
+
+		/// Own-brand share of category sales.
+		measure 'Private Label Share %' = DIVIDE ( [Private Label Sales], [Category Sales] )
+			formatString: 0.0%
+			displayFolder: 05 Category\Private Label
+
+		/// Own-brand share in the previous year.
+		measure 'Private Label Share % PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [Private Label Share %], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: 0.0%
+			displayFolder: 05 Category\Private Label
+
+		/// Change in own-brand share, in percentage points.
+		measure 'Private Label Share Change (pp)' = ( [Private Label Share %] - [Private Label Share % PY] ) * 100
+			formatString: +0.0;-0.0;0.0
+			displayFolder: 05 Category\Private Label
+
+		/// Stores open at the end of the selected period.
+		measure 'Active Stores' =
+				VAR _Last = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+				RETURN
+					COUNTROWS (
+					FILTER (
+						DimStore,
+						DimStore[OpeningDate] <= _Last
+							&& ( ISBLANK ( DimStore[ClosingDate] ) || DimStore[ClosingDate] > _Last )
+					)
+					)
+			formatString: #,0
+			displayFolder: 06 Store Network
+
+		/// Stores open at the end of the same period last year.
+		measure 'Active Stores PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [Active Stores], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: #,0
+			displayFolder: 06 Store Network
+
+		/// Net change in active stores vs previous year.
+		measure 'Active Stores YoY' = [Active Stores] - [Active Stores PY]
+			formatString: +#,0;-#,0;0
+			displayFolder: 06 Store Network
+
+		/// Stores opened within the selected period.
+		measure 'New Openings' =
+				VAR _Min = MIN ( DimDate[Date] )
+				VAR _Max = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+				RETURN
+					COUNTROWS (
+						FILTER ( DimStore, DimStore[OpeningDate] >= _Min && DimStore[OpeningDate] <= _Max )
+					) + 0
+			formatString: #,0
+			displayFolder: 06 Store Network
+
+		/// Stores closed within the selected period.
+		measure 'Store Closures' =
+				VAR _Min = MIN ( DimDate[Date] )
+				VAR _Max = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+				RETURN
+					COUNTROWS (
+						FILTER (
+							DimStore,
+							NOT ISBLANK ( DimStore[ClosingDate] )
+								&& DimStore[ClosingDate] >= _Min
+								&& DimStore[ClosingDate] <= _Max
+						)
+					) + 0
+			formatString: #,0
+			displayFolder: 06 Store Network
+
+		/// New openings minus closures.
+		measure 'Net Openings' = [New Openings] - [Store Closures]
+			formatString: +#,0;-#,0;0
+			displayFolder: 06 Store Network
+
+		/// Closures as a negative value, for openings vs closures charts.
+		measure 'Store Closures (Chart)' = - [Store Closures]
+			formatString: #,0
+			displayFolder: 06 Store Network
+
+		/// Franchisees operating at least one active store.
+		measure 'Active Franchisees' =
+				VAR _Last = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+				RETURN
+					CALCULATE (
+						DISTINCTCOUNT ( DimStore[FranchiseeID] ),
+					FILTER (
+						DimStore,
+						DimStore[OpeningDate] <= _Last
+							&& ( ISBLANK ( DimStore[ClosingDate] ) || DimStore[ClosingDate] > _Last )
+					),
+						DimStore[FranchiseeID] <> "COMPANY"
+					)
+			formatString: #,0
+			displayFolder: 06 Store Network
+
+		/// Average active franchise stores per franchisee.
+		measure 'Stores per Franchisee' =
+				DIVIDE (
+					CALCULATE ( [Active Stores], DimStore[FranchiseeID] <> "COMPANY" ),
+					[Active Franchisees]
+				)
+			formatString: #,0.00
+			displayFolder: 06 Store Network
+
+		/// Avg daily sales per store in the previous year.
+		measure 'Avg Daily Sales per Store PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [Avg Daily Sales per Store], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: #,0
+			displayFolder: 06 Store Network
+
+		/// Growth in avg daily sales per store.
+		measure 'Avg Daily Sales per Store YoY %' = DIVIDE ( [Avg Daily Sales per Store] - [Avg Daily Sales per Store PY], [Avg Daily Sales per Store PY] )
+			formatString: 0.0%
+			displayFolder: 06 Store Network
+
+		/// Net sales from Żabka Nano autonomous stores.
+		measure 'Nano Net Sales' = CALCULATE ( [Net Sales], DimStore[Format] = "Nano" )
+			formatString: #,0
+			displayFolder: 06 Store Network
+
+		/// Nano share of total net sales.
+		measure 'Nano Sales Share %' = DIVIDE ( [Nano Net Sales], CALCULATE ( [Net Sales], ALL ( DimStore[Format] ) ) )
+			formatString: 0.0%
+			displayFolder: 06 Store Network
+
+		/// Net sales from Żappka-linked receipts.
+		measure 'App Sales' = SUM ( FactDailySales[AppSales] )
+			formatString: #,0
+			displayFolder: 07 Digital (Zappka)
+
+		/// Receipts linked to the Żappka app.
+		measure 'App Transactions' = SUM ( FactDailySales[AppTransactions] )
+			formatString: #,0
+			displayFolder: 07 Digital (Zappka)
+
+		/// Share of receipts linked to the app.
+		measure 'App Transaction Share %' = DIVIDE ( [App Transactions], [Total Transactions] )
+			formatString: 0.0%
+			displayFolder: 07 Digital (Zappka)
+
+		/// Share of net sales from app-linked receipts.
+		measure 'App Sales Share %' = DIVIDE ( [App Sales], [Net Sales] )
+			formatString: 0.0%
+			displayFolder: 07 Digital (Zappka)
+
+		/// Average basket of app-linked receipts (PLN).
+		measure 'App Basket' = DIVIDE ( [App Sales], [App Transactions] )
+			formatString: #,0.00
+			displayFolder: 07 Digital (Zappka)
+
+		/// Average basket of receipts without the app (PLN).
+		measure 'Non-App Basket' = DIVIDE ( [Net Sales] - [App Sales], [Total Transactions] - [App Transactions] )
+			formatString: #,0.00
+			displayFolder: 07 Digital (Zappka)
+
+		/// How much larger the app basket is vs non-app.
+		measure 'App Basket Uplift %' = DIVIDE ( [App Basket], [Non-App Basket] ) - 1
+			formatString: 0.0%
+			displayFolder: 07 Digital (Zappka)
+
+		/// App share of receipts in the previous year.
+		measure 'App Transaction Share % PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [App Transaction Share %], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: 0.0%
+			displayFolder: 07 Digital (Zappka)
+
+		/// Change in app share of receipts, in percentage points.
+		measure 'App Transaction Share Change (pp)' = ( [App Transaction Share %] - [App Transaction Share % PY] ) * 100
+			formatString: +0.0;-0.0;0.0
+			displayFolder: 07 Digital (Zappka)
+
+		/// Registered app users at the end of the period (semi-additive).
+		measure 'Registered Users' =
+				VAR _LastMonth = MAX ( FactAppMetrics[MonthStart] )
+				RETURN CALCULATE ( SUM ( FactAppMetrics[RegisteredUsers] ), DimDate[Date] = _LastMonth )
+			formatString: #,0
+			displayFolder: 07 Digital (Zappka)
+
+		/// Monthly active users in the last month of the period (semi-additive).
+		measure 'Monthly Active Users' =
+				VAR _LastMonth = MAX ( FactAppMetrics[MonthStart] )
+				RETURN CALCULATE ( SUM ( FactAppMetrics[MonthlyActiveUsers] ), DimDate[Date] = _LastMonth )
+			formatString: #,0
+			displayFolder: 07 Digital (Zappka)
+
+		/// Average MAU across the months in the period.
+		measure 'Avg Monthly Active Users' =
+				AVERAGEX (
+					VALUES ( DimDate[YearMonth] ),
+					CALCULATE ( SUM ( FactAppMetrics[MonthlyActiveUsers] ) )
+				)
+			formatString: #,0
+			displayFolder: 07 Digital (Zappka)
+
+		/// MAU as % of registered users.
+		measure 'Activation Rate %' = DIVIDE ( [Monthly Active Users], [Registered Users] )
+			formatString: 0.0%
+			displayFolder: 07 Digital (Zappka)
+
+		/// Registered users at the same point last year.
+		measure 'Registered Users PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [Registered Users], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: #,0
+			displayFolder: 07 Digital (Zappka)
+
+		/// Growth in registered users.
+		measure 'Registered Users YoY %' = DIVIDE ( [Registered Users] - [Registered Users PY], [Registered Users PY] )
+			formatString: 0.0%
+			displayFolder: 07 Digital (Zappka)
+
+		/// MAU at the same point last year.
+		measure 'Monthly Active Users PY' =
+				IF (
+					EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+					BLANK (),
+					CALCULATE ( [Monthly Active Users], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+				)
+			formatString: #,0
+			displayFolder: 07 Digital (Zappka)
+
+		/// Growth in MAU.
+		measure 'Monthly Active Users YoY %' = DIVIDE ( [Monthly Active Users] - [Monthly Active Users PY], [Monthly Active Users PY] )
+			formatString: 0.0%
+			displayFolder: 07 Digital (Zappka)
+
+		/// New app sign-ups.
+		measure 'New Registrations' = SUM ( FactAppMetrics[NewRegistrations] )
+			formatString: #,0
+			displayFolder: 07 Digital (Zappka)
+
+		/// App coupons redeemed.
+		measure 'Coupons Redeemed' = SUM ( FactAppMetrics[CouponsRedeemed] )
+			formatString: #,0
+			displayFolder: 07 Digital (Zappka)
+
+		/// Coupons redeemed per app-linked receipt.
+		measure 'Coupons per App Transaction' = DIVIDE ( [Coupons Redeemed], [App Transactions] )
+			formatString: 0.00
+			displayFolder: 07 Digital (Zappka)
+
+		/// Average app store rating.
+		measure 'App Rating' = AVERAGE ( FactAppMetrics[AppRating] )
+			formatString: 0.00
+			displayFolder: 07 Digital (Zappka)
+
+		/// Footer label with the last actual date.
+		measure 'Data As Of' = FORMAT ( [Last Actual Date], "dd mmm yyyy", "en-US" )
+			displayFolder: 99 Formatting
+
+		/// Label for the selected year.
+		measure 'Selected Period Label' = "FY " & SELECTEDVALUE ( DimDate[Year], "All years" )
+			displayFolder: 99 Formatting
+
+		/// Arrow label for [Net Sales YoY %].
+		measure 'Label Net Sales YoY' = IF ( ISBLANK ( [Net Sales YoY %] ), BLANK (), FORMAT ( [Net Sales YoY %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+			displayFolder: 99 Formatting
+
+		/// Arrow label for [Sales vs Budget %].
+		measure 'Label Sales vs Budget' = IF ( ISBLANK ( [Sales vs Budget %] ), BLANK (), FORMAT ( [Sales vs Budget %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+			displayFolder: 99 Formatting
+
+		/// Arrow label for [LFL Growth %].
+		measure 'Label LFL Growth' = IF ( ISBLANK ( [LFL Growth %] ), BLANK (), FORMAT ( [LFL Growth %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+			displayFolder: 99 Formatting
+
+		/// Arrow label for gross margin change.
+		measure 'Label Gross Margin YoY' = IF ( ISBLANK ( [Gross Margin % PY] ), BLANK (), FORMAT ( [Gross Margin YoY (pp)], "▲ 0.0;▼ 0.0;0.0", "en-US" ) & " pp" )
+			displayFolder: 99 Formatting
+
+		/// Arrow label for avg basket growth.
+		measure 'Label Avg Basket YoY' = IF ( ISBLANK ( [Avg Basket YoY %] ), BLANK (), FORMAT ( [Avg Basket YoY %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+			displayFolder: 99 Formatting
+
+		/// Arrow label for store EBITDA margin change.
+		measure 'Label EBITDA Margin YoY' = IF ( ISBLANK ( [Store EBITDA Margin % PY] ), BLANK (), FORMAT ( [Store EBITDA Margin YoY (pp)], "▲ 0.0;▼ 0.0;0.0", "en-US" ) & " pp" )
+			displayFolder: 99 Formatting
+
+		/// Budget achievement label.
+		measure 'Label Budget Achievement' = IF ( ISBLANK ( [Budget Achievement %] ), BLANK (), FORMAT ( [Budget Achievement %], "0.0%", "en-US" ) )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [Avg Basket YoY %].
+		measure 'Color Avg Basket YoY' = IF ( ISBLANK ( [Avg Basket YoY %] ), "#8A8A8A", IF ( [Avg Basket YoY %] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [Store EBITDA Margin YoY (pp)].
+		measure 'Color EBITDA Margin YoY' = IF ( ISBLANK ( [Store EBITDA Margin YoY (pp)] ), "#8A8A8A", IF ( [Store EBITDA Margin YoY (pp)] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting
+
+		/// Arrow label for net change in active stores vs PY.
+		measure 'Label Active Stores YoY' = IF ( ISBLANK ( [Active Stores PY] ), BLANK (), FORMAT ( [Active Stores YoY], "▲ #,0;▼ #,0;0", "en-US" ) & " stores" )
+			displayFolder: 99 Formatting
+
+		/// Openings | closures label.
+		measure 'Label Openings Closures' = FORMAT ( [New Openings], "#,0", "en-US" ) & "  |  " & FORMAT ( [Store Closures], "#,0", "en-US" )
+			displayFolder: 99 Formatting
+
+		/// Arrow label for avg daily sales per store growth.
+		measure 'Label Avg Daily Sales YoY' = IF ( ISBLANK ( [Avg Daily Sales per Store YoY %] ), BLANK (), FORMAT ( [Avg Daily Sales per Store YoY %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+			displayFolder: 99 Formatting
+
+		/// Stores per franchisee label.
+		measure 'Label Stores per Franchisee' = FORMAT ( [Stores per Franchisee], "0.00", "en-US" )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [Active Stores YoY].
+		measure 'Color Active Stores YoY' = IF ( ISBLANK ( [Active Stores YoY] ), "#8A8A8A", IF ( [Active Stores YoY] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [Avg Daily Sales per Store YoY %].
+		measure 'Color Avg Daily Sales YoY' = IF ( ISBLANK ( [Avg Daily Sales per Store YoY %] ), "#8A8A8A", IF ( [Avg Daily Sales per Store YoY %] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [Net Openings].
+		measure 'Color Net Openings' = IF ( ISBLANK ( [Net Openings] ), "#8A8A8A", IF ( [Net Openings] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting
+
+		/// Arrow label for app transaction share change (pp).
+		measure 'Label App Share Change' = IF ( ISBLANK ( [App Transaction Share % PY] ), BLANK (), FORMAT ( [App Transaction Share Change (pp)], "▲ 0.0;▼ 0.0;0.0", "en-US" ) & " pp" )
+			displayFolder: 99 Formatting
+
+		/// Arrow label for registered users growth.
+		measure 'Label Registered Users YoY' = IF ( ISBLANK ( [Registered Users YoY %] ), BLANK (), FORMAT ( [Registered Users YoY %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+			displayFolder: 99 Formatting
+
+		/// Arrow label for monthly active users growth.
+		measure 'Label MAU YoY' = IF ( ISBLANK ( [Monthly Active Users YoY %] ), BLANK (), FORMAT ( [Monthly Active Users YoY %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [App Transaction Share Change (pp)].
+		measure 'Color App Share Change' = IF ( ISBLANK ( [App Transaction Share Change (pp)] ), "#8A8A8A", IF ( [App Transaction Share Change (pp)] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [Registered Users YoY %].
+		measure 'Color Registered Users YoY' = IF ( ISBLANK ( [Registered Users YoY %] ), "#8A8A8A", IF ( [Registered Users YoY %] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [Monthly Active Users YoY %].
+		measure 'Color MAU YoY' = IF ( ISBLANK ( [Monthly Active Users YoY %] ), "#8A8A8A", IF ( [Monthly Active Users YoY %] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [Net Sales YoY %].
+		measure 'Color Net Sales YoY' = IF ( ISBLANK ( [Net Sales YoY %] ), "#8A8A8A", IF ( [Net Sales YoY %] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [Sales vs Budget %].
+		measure 'Color Sales vs Budget' = IF ( ISBLANK ( [Sales vs Budget %] ), "#8A8A8A", IF ( [Sales vs Budget %] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [Gross Margin YoY (pp)].
+		measure 'Color Gross Margin YoY' = IF ( ISBLANK ( [Gross Margin YoY (pp)] ), "#8A8A8A", IF ( [Gross Margin YoY (pp)] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting
+
+		/// Conditional formatting color for [LFL Growth %].
+		measure 'Color LFL Growth' = IF ( ISBLANK ( [LFL Growth %] ), "#8A8A8A", IF ( [LFL Growth %] >= 0, "#1E8E3E", "#D93025" ) )
+			displayFolder: 99 Formatting

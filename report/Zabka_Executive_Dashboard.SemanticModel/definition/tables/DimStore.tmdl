@@ -1,0 +1,191 @@
+table DimStore
+	lineageTag: 6c09e4f5-5272-4714-b8dd-6ff31bff723e
+
+	column StoreID
+		dataType: string
+		lineageTag: fdd52225-658d-4494-85e5-e554c32a150b
+		summarizeBy: none
+		sourceColumn: StoreID
+
+		annotation SummarizationSetBy = Automatic
+
+	column StoreName
+		dataType: string
+		lineageTag: a8f16a85-5a02-456e-8c67-c73028d3cfcf
+		summarizeBy: none
+		sourceColumn: StoreName
+
+		annotation SummarizationSetBy = Automatic
+
+	column FranchiseeID
+		dataType: string
+		lineageTag: 8a2ac943-7308-4d9c-9204-050a917562f9
+		summarizeBy: none
+		sourceColumn: FranchiseeID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Format
+		dataType: string
+		lineageTag: 3984eb1e-fa5e-4634-b4b6-e6e784c09ad5
+		summarizeBy: none
+		sourceColumn: Format
+
+		annotation SummarizationSetBy = Automatic
+
+	column LocationType
+		dataType: string
+		lineageTag: cf91e894-922a-4e69-855c-153e56e787e4
+		summarizeBy: none
+		sourceColumn: LocationType
+
+		annotation SummarizationSetBy = Automatic
+
+	column City
+		dataType: string
+		lineageTag: a0148328-b4f9-45e0-82e0-e1bb898aa8db
+		summarizeBy: none
+		sourceColumn: City
+
+		annotation SummarizationSetBy = Automatic
+
+	column Voivodeship
+		dataType: string
+		lineageTag: f4afe915-8a3f-4ffa-b9f7-118b3c279a67
+		summarizeBy: none
+		sourceColumn: Voivodeship
+
+		annotation SummarizationSetBy = Automatic
+
+	column RegionID
+		dataType: string
+		lineageTag: 7aa8ee78-1dfd-40f7-987b-bb5490e927fe
+		summarizeBy: none
+		sourceColumn: RegionID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: 3380222d-78a5-4c91-b4d1-fac45bb20579
+		summarizeBy: none
+		sourceColumn: Region
+
+		annotation SummarizationSetBy = Automatic
+
+	column Latitude
+		dataType: double
+		lineageTag: 2ed94499-00a5-49c6-bfd6-c554f882d23b
+		dataCategory: Latitude
+		summarizeBy: none
+		sourceColumn: Latitude
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Longitude
+		dataType: double
+		lineageTag: 1a748330-a82b-40b7-878f-968f1f71c9b3
+		dataCategory: Longitude
+		summarizeBy: none
+		sourceColumn: Longitude
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SalesAreaSqm
+		dataType: int64
+		formatString: 0
+		lineageTag: f6d78b46-a6f7-4131-be27-0731ebfe0f24
+		summarizeBy: sum
+		sourceColumn: SalesAreaSqm
+
+		annotation SummarizationSetBy = Automatic
+
+	column OpeningDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: af4fa09d-843a-4f28-88ca-92f6e21644d5
+		summarizeBy: none
+		sourceColumn: OpeningDate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column OpeningYear
+		dataType: int64
+		formatString: 0
+		lineageTag: 54e83a89-5ec6-46be-808b-9b969cf572b6
+		summarizeBy: sum
+		sourceColumn: OpeningYear
+
+		annotation SummarizationSetBy = Automatic
+
+	column ClosingDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c1884433-6654-4476-95b7-33a2a0836a78
+		summarizeBy: none
+		sourceColumn: ClosingDate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Status
+		dataType: string
+		lineageTag: 0930a2b9-b5ee-402e-a67b-93bafa7960b4
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column StoreCohort
+		dataType: string
+		lineageTag: c0bff689-980d-44c8-9412-08c76500f996
+		summarizeBy: none
+		sourceColumn: StoreCohort
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsSeasideCity
+		dataType: int64
+		formatString: 0
+		lineageTag: fe8baeff-66c1-4a70-909e-9cd9d8ff553d
+		summarizeBy: sum
+		sourceColumn: IsSeasideCity
+
+		annotation SummarizationSetBy = Automatic
+
+	column OperatingModel
+		dataType: string
+		lineageTag: 7deb3cf7-e493-47c3-aeb2-233103452297
+		summarizeBy: none
+		sourceColumn: OperatingModel
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimStore = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ProjectPath & "Data\DimStore.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Types = Table.TransformColumnTypes(Headers, {
+				        {"StoreID", type text}, {"StoreName", type text}, {"FranchiseeID", type text},
+				        {"Format", type text}, {"LocationType", type text}, {"City", type text},
+				        {"Voivodeship", type text}, {"RegionID", type text}, {"Region", type text},
+				        {"Latitude", type number}, {"Longitude", type number}, {"SalesAreaSqm", Int64.Type},
+				        {"OpeningDate", type date}, {"OpeningYear", Int64.Type}, {"ClosingDate", type date},
+				        {"Status", type text}, {"StoreCohort", type text}, {"IsSeasideCity", Int64.Type},
+				        {"OperatingModel", type text}}, "en-US")
+				in
+				    Types
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

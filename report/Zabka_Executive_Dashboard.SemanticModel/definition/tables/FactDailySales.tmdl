@@ -1,0 +1,123 @@
+table FactDailySales
+	lineageTag: 4fe9f289-b956-4d3b-bf66-cac051ef86c3
+
+	column Date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: d711bfef-70d4-4a56-9b27-eba9b0ccbbf5
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column StoreID
+		dataType: string
+		lineageTag: f3af2192-7806-4ef4-a7b7-ad43c6c2fd40
+		summarizeBy: none
+		sourceColumn: StoreID
+
+		annotation SummarizationSetBy = Automatic
+
+	column NetSales
+		dataType: double
+		lineageTag: 9ab6950c-7bd2-49b2-b3ac-e91f78baa090
+		summarizeBy: sum
+		sourceColumn: NetSales
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column COGS
+		dataType: double
+		lineageTag: 842e539e-eff6-4f95-a638-8a4b22acb1c8
+		summarizeBy: sum
+		sourceColumn: COGS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column GrossProfit
+		dataType: double
+		formatString: 0
+		lineageTag: 3da1decd-f570-4fee-bb53-db81d0e9bbf7
+		summarizeBy: sum
+		sourceColumn: GrossProfit
+
+		annotation SummarizationSetBy = Automatic
+
+	column Transactions
+		dataType: int64
+		formatString: 0
+		lineageTag: e2b4a377-9cf4-4d74-94b9-79ae6a35402d
+		summarizeBy: sum
+		sourceColumn: Transactions
+
+		annotation SummarizationSetBy = Automatic
+
+	column ItemsSold
+		dataType: int64
+		formatString: 0
+		lineageTag: 9e1c962b-4592-4876-9717-53e8c5828ae0
+		summarizeBy: sum
+		sourceColumn: ItemsSold
+
+		annotation SummarizationSetBy = Automatic
+
+	column AppTransactions
+		dataType: int64
+		formatString: 0
+		lineageTag: 4d23513b-f48d-47c3-867a-6635d5636007
+		summarizeBy: sum
+		sourceColumn: AppTransactions
+
+		annotation SummarizationSetBy = Automatic
+
+	column AppSales
+		dataType: double
+		lineageTag: f5f51692-8e72-4ffe-9636-29b9169a22a0
+		summarizeBy: sum
+		sourceColumn: AppSales
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column PromoSales
+		dataType: double
+		lineageTag: aa76fef7-5d61-4654-9059-f563574c4587
+		summarizeBy: sum
+		sourceColumn: PromoSales
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition FactDailySales = m
+		mode: import
+		source =
+				let
+				  Origem = Folder.Files(ProjectPath & "DailySales"),
+				  #"Arquivos ocultos filtrados" = Table.SelectRows(Origem, each [Attributes]?[Hidden]? <> true),
+				  #"Personalização adicionada" = let
+				    rootPath = Text.TrimEnd(Value.Metadata(Value.Type(#"Arquivos ocultos filtrados"))[FileSystemTable.RootPath]?, "\"),
+				    combinePaths = (path1, path2) => Text.Combine({Text.TrimEnd(path1, "\"), path2}, "\"),
+				    getRelativePath = (path, relativeTo) => Text.Middle(path, Text.Length(relativeTo) + 1)
+				in
+				    Table.AddColumn(#"Arquivos ocultos filtrados", "Relative Path", each getRelativePath(combinePaths([Folder Path], [Name]), rootPath), type text),
+				  #"Invocar a função personalizada" = Table.AddColumn(#"Personalização adicionada", "Transformar o arquivo", each #"Transformar o arquivo"([Content])),
+				  #"Colunas renomeadas" = Table.RenameColumns(#"Invocar a função personalizada", {{"Relative Path", "Nome da Origem"}}),
+				  #"As outras colunas foram removidas" = Table.SelectColumns(#"Colunas renomeadas", {"Nome da Origem", "Transformar o arquivo"}),
+				  #"Coluna de tabela expandida" = Table.ExpandTableColumn(#"As outras colunas foram removidas", "Transformar o arquivo", Table.ColumnNames(#"Transformar o arquivo"(#"Arquivo de exemplo"))),
+				  #"Tipo de coluna alterado" = Table.TransformColumnTypes(#"Coluna de tabela expandida",{{"Date", type date}, {"StoreID", type text}, {"NetSales", type number}, {"COGS", type number}, {"GrossProfit", type number}, {"Transactions", Int64.Type}, {"ItemsSold", Int64.Type}, {"AppTransactions", Int64.Type}, {"AppSales", type number}, {"PromoSales", type number}}),
+				    #"Colunas Removidas" = Table.RemoveColumns(#"Tipo de coluna alterado",{"Nome da Origem"})
+				in
+				  #"Colunas Removidas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

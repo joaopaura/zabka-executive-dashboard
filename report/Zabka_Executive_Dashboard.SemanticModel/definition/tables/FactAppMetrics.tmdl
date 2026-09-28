@@ -1,0 +1,85 @@
+table FactAppMetrics
+	lineageTag: 520a1f85-69b3-42b2-810a-ee7ca3495b3a
+
+	column MonthStart
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 85e2ed7a-b2c2-4972-a825-07372352012f
+		summarizeBy: none
+		sourceColumn: MonthStart
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column RegionID
+		dataType: string
+		lineageTag: 5253a363-260e-44f4-9588-055cb69bb0a1
+		summarizeBy: none
+		sourceColumn: RegionID
+
+		annotation SummarizationSetBy = Automatic
+
+	column RegisteredUsers
+		dataType: int64
+		formatString: 0
+		lineageTag: 5c87ed26-8226-4eca-984b-e61c4d9cb7ff
+		summarizeBy: sum
+		sourceColumn: RegisteredUsers
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthlyActiveUsers
+		dataType: int64
+		formatString: 0
+		lineageTag: c1a4aa08-536a-4f58-b3bf-f8ec5749578b
+		summarizeBy: sum
+		sourceColumn: MonthlyActiveUsers
+
+		annotation SummarizationSetBy = Automatic
+
+	column NewRegistrations
+		dataType: int64
+		formatString: 0
+		lineageTag: ef70d65c-b887-4072-9d9a-19745f0a5448
+		summarizeBy: sum
+		sourceColumn: NewRegistrations
+
+		annotation SummarizationSetBy = Automatic
+
+	column CouponsRedeemed
+		dataType: int64
+		formatString: 0
+		lineageTag: 3df85220-de5f-45e8-bbf2-53d90338db13
+		summarizeBy: sum
+		sourceColumn: CouponsRedeemed
+
+		annotation SummarizationSetBy = Automatic
+
+	column AppRating
+		dataType: double
+		lineageTag: 41f29956-dfe8-419c-82b4-7d68db387b99
+		summarizeBy: sum
+		sourceColumn: AppRating
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition FactAppMetrics = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ProjectPath & "Data\FactAppMetrics.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Types = Table.TransformColumnTypes(Headers, {
+				        {"MonthStart", type date}, {"RegionID", type text}, {"RegisteredUsers", Int64.Type},
+				        {"MonthlyActiveUsers", Int64.Type}, {"NewRegistrations", Int64.Type},
+				        {"CouponsRedeemed", Int64.Type}, {"AppRating", type number}}, "en-US")
+				in
+				    Types
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

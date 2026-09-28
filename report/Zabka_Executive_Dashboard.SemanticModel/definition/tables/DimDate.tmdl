@@ -1,0 +1,269 @@
+table DimDate
+	lineageTag: cfd369a8-9185-4fea-a2ae-e8b854a89492
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: 3c6664c0-d793-4493-ba8e-e198051006a1
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column DateKey
+		dataType: int64
+		formatString: 0
+		lineageTag: 4577ffd7-37f4-4e73-b402-1c1f00d00914
+		summarizeBy: count
+		sourceColumn: DateKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: eab5f6ff-3ed9-4406-a361-85e8c10276e8
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: int64
+		formatString: 0
+		lineageTag: 1019238f-6b26-48fb-8e78-2af149571097
+		summarizeBy: sum
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column QuarterLabel
+		dataType: string
+		lineageTag: 137436f6-a994-4121-a31a-cc852eaa7722
+		summarizeBy: none
+		sourceColumn: QuarterLabel
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearQuarter
+		dataType: string
+		lineageTag: 84fd1bc3-dfe3-446d-b364-8f1a2c9fd6e7
+		summarizeBy: none
+		sourceColumn: YearQuarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthNumber
+		dataType: int64
+		formatString: 0
+		lineageTag: 7765e27e-9cb4-46bb-aeff-0d185d9f6938
+		summarizeBy: sum
+		sourceColumn: MonthNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthName
+		dataType: string
+		lineageTag: 525a5487-00fd-49c5-b39b-29ec802a514f
+		summarizeBy: none
+		sourceColumn: MonthName
+		sortByColumn: MonthNumber
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthShort
+		dataType: string
+		lineageTag: dc2b01d3-ce41-4945-bf03-748da095a121
+		summarizeBy: none
+		sourceColumn: MonthShort
+		sortByColumn: MonthNumber
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonth
+		dataType: string
+		lineageTag: 190c0434-f26f-4413-89fd-0297d27b8245
+		summarizeBy: none
+		sourceColumn: YearMonth
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonthNumber
+		dataType: int64
+		formatString: 0
+		lineageTag: 5cc61883-2a5d-4718-8f9c-abf22390bf70
+		summarizeBy: sum
+		sourceColumn: YearMonthNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthStart
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 2b9baec4-3044-4835-9928-4fabf07ee635
+		summarizeBy: none
+		sourceColumn: MonthStart
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ISOWeek
+		dataType: int64
+		formatString: 0
+		lineageTag: 2c0fcc66-adf2-412f-afe0-c49e665fb5d9
+		summarizeBy: sum
+		sourceColumn: ISOWeek
+
+		annotation SummarizationSetBy = Automatic
+
+	column ISOYear
+		dataType: int64
+		formatString: 0
+		lineageTag: 2bb794a0-b1dd-4178-b8a1-4fef9839a0da
+		summarizeBy: sum
+		sourceColumn: ISOYear
+
+		annotation SummarizationSetBy = Automatic
+
+	column DayOfMonth
+		dataType: int64
+		formatString: 0
+		lineageTag: 2398acec-efae-4884-a0e8-7d6baae4385f
+		summarizeBy: sum
+		sourceColumn: DayOfMonth
+
+		annotation SummarizationSetBy = Automatic
+
+	column DayOfWeekNumber
+		dataType: int64
+		formatString: 0
+		lineageTag: 09943e16-9e64-476a-8187-c722d20253c3
+		summarizeBy: sum
+		sourceColumn: DayOfWeekNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column DayName
+		dataType: string
+		lineageTag: 0793af00-84bc-4ddb-ae91-d2de8af90c3e
+		summarizeBy: none
+		sourceColumn: DayName
+		sortByColumn: DayOfWeekNumber
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column DayShort
+		dataType: string
+		lineageTag: bcb3812e-cdf6-4ccd-879d-311104ab8aa8
+		summarizeBy: none
+		sourceColumn: DayShort
+		sortByColumn: DayOfWeekNumber
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsWeekend
+		dataType: int64
+		formatString: 0
+		lineageTag: 0cf3eaec-4039-48b2-862e-b7c40e6dad95
+		summarizeBy: sum
+		sourceColumn: IsWeekend
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsHoliday
+		dataType: int64
+		formatString: 0
+		lineageTag: a1c0c1b1-6410-42d1-bdf2-06b315afb0e3
+		summarizeBy: sum
+		sourceColumn: IsHoliday
+
+		annotation SummarizationSetBy = Automatic
+
+	column HolidayName
+		dataType: string
+		lineageTag: 7fc29880-e8a1-419b-84c9-29128bb2a953
+		summarizeBy: none
+		sourceColumn: HolidayName
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsSunday
+		dataType: int64
+		formatString: 0
+		lineageTag: c52e7500-5ac8-4b5b-a371-236dcb05d6f4
+		summarizeBy: sum
+		sourceColumn: IsSunday
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsTradingSunday
+		dataType: int64
+		formatString: 0
+		lineageTag: e6650328-76c1-47c9-b9d9-1e7062c6d18f
+		summarizeBy: sum
+		sourceColumn: IsTradingSunday
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsNonTradingSunday
+		dataType: int64
+		formatString: 0
+		lineageTag: b8ab9ed6-25ec-4690-a744-f5c066ecc13c
+		summarizeBy: sum
+		sourceColumn: IsNonTradingSunday
+
+		annotation SummarizationSetBy = Automatic
+
+	column Season
+		dataType: string
+		lineageTag: 3bc1e28b-84f8-496f-b3d8-a937e08ae87a
+		summarizeBy: none
+		sourceColumn: Season
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsActualPeriod
+		dataType: int64
+		formatString: 0
+		lineageTag: 2c5e23b1-2b58-45c4-b062-c074154ec8d8
+		summarizeBy: sum
+		sourceColumn: IsActualPeriod
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimDate = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ProjectPath & "Data\DimDate.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Types = Table.TransformColumnTypes(Headers, {
+				        {"Date", type date}, {"DateKey", Int64.Type}, {"Year", Int64.Type}, {"Quarter", Int64.Type},
+				        {"QuarterLabel", type text}, {"YearQuarter", type text}, {"MonthNumber", Int64.Type},
+				        {"MonthName", type text}, {"MonthShort", type text}, {"YearMonth", type text},
+				        {"YearMonthNumber", Int64.Type}, {"MonthStart", type date}, {"ISOWeek", Int64.Type},
+				        {"ISOYear", Int64.Type}, {"DayOfMonth", Int64.Type}, {"DayOfWeekNumber", Int64.Type},
+				        {"DayName", type text}, {"DayShort", type text}, {"IsWeekend", Int64.Type},
+				        {"IsHoliday", Int64.Type}, {"HolidayName", type text}, {"IsSunday", Int64.Type},
+				        {"IsTradingSunday", Int64.Type}, {"IsNonTradingSunday", Int64.Type},
+				        {"Season", type text}, {"IsActualPeriod", Int64.Type}}, "en-US")
+				in
+				    Types
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

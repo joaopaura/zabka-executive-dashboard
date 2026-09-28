@@ -1,0 +1,107 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.3.0/schema.json",
+  "themeCollection": {
+    "baseTheme": {
+      "name": "Fluent2-CY26SU08",
+      "reportVersionAtImport": {
+        "visual": "2.12.0",
+        "report": "3.4.0",
+        "page": "2.3.1"
+      },
+      "type": "SharedResources"
+    },
+    "customTheme": {
+      "name": "Zabka_Executive_Light7599057588370032.json",
+      "reportVersionAtImport": {
+        "visual": "2.12.0",
+        "report": "3.4.0",
+        "page": "2.3.1"
+      },
+      "type": "RegisteredResources"
+    }
+  },
+  "objects": {
+    "section": [
+      {
+        "properties": {
+          "verticalAlignment": {
+            "expr": {
+              "Literal": {
+                "Value": "'Top'"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "outspacePane": [
+      {
+        "properties": {
+          "expanded": {
+            "expr": {
+              "Literal": {
+                "Value": "false"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "resourcePackages": [
+    {
+      "name": "SharedResources",
+      "type": "SharedResources",
+      "items": [
+        {
+          "name": "Fluent2-CY26SU08",
+          "path": "BaseThemes/Fluent2-CY26SU08.json",
+          "type": "BaseTheme"
+        }
+      ]
+    },
+    {
+      "name": "RegisteredResources",
+      "type": "RegisteredResources",
+      "items": [
+        {
+          "name": "Zabka_BG_00_Cover30067496278002204.png",
+          "path": "Zabka_BG_00_Cover30067496278002204.png",
+          "type": "Image"
+        },
+        {
+          "name": "Zabka_BG_01_Sales257522756215817.png",
+          "path": "Zabka_BG_01_Sales257522756215817.png",
+          "type": "Image"
+        },
+        {
+          "name": "Zabka_BG_02_Network27832169022379105.png",
+          "path": "Zabka_BG_02_Network27832169022379105.png",
+          "type": "Image"
+        },
+        {
+          "name": "Zabka_BG_03_Digital9624828281848078.png",
+          "path": "Zabka_BG_03_Digital9624828281848078.png",
+          "type": "Image"
+        },
+        {
+          "name": "Zabka_Executive_Light7599057588370032.json",
+          "path": "Zabka_Executive_Light7599057588370032.json",
+          "type": "CustomTheme"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "useStylableVisualContainerHeader": true,
+    "exportDataMode": "AllowSummarized",
+    "defaultDrillFilterOtherVisuals": true,
+    "allowChangeFilterTypes": true,
+    "useEnhancedTooltips": true,
+    "useDefaultAggregateDisplayName": true,
+    "queryLimitOption": "None",
+    "customMemoryLimit": "1048576",
+    "customTimeoutLimit": "225",
+    "locale": "en-US"
+  }
+}

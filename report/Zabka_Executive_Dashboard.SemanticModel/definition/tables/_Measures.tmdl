@@ -1,0 +1,963 @@
+table _Measures
+	lineageTag: 6f3ee80e-4bcf-4681-96c1-f5aa9e54089e
+
+	/// Last date with actual sales in the dataset.
+	measure 'Last Actual Date' = CALCULATE ( MAX ( FactDailySales[Date] ), ALL ( FactDailySales ) )
+		formatString: dd mmm yyyy
+		displayFolder: 00 Base
+		lineageTag: 0855e13f-99c0-4b2d-8fa4-3f891f98ae17
+
+	/// Number of store-days with sales (rows in FactDailySales).
+	measure 'Store Trading Days' = COUNTROWS ( FactDailySales )
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: be6f2672-6732-4179-bd96-78d549bc4962
+
+	/// Net sales excl. VAT (PLN).
+	measure 'Net Sales' = SUM ( FactDailySales[NetSales] )
+		formatString: #,0
+		displayFolder: 01 Sales
+		lineageTag: 058686dd-0af6-4c75-b57f-7e80b1257d97
+
+	/// Number of receipts.
+	measure 'Total Transactions' = SUM ( FactDailySales[Transactions] )
+		formatString: #,0
+		displayFolder: 01 Sales
+		lineageTag: f4e21775-f742-431e-99db-c09481c90c4e
+
+	/// Number of items scanned.
+	measure 'Items Sold' = SUM ( FactDailySales[ItemsSold] )
+		formatString: #,0
+		displayFolder: 01 Sales
+		lineageTag: 5b06cf2d-5033-4ef0-85e0-d0e3a84bf6a4
+
+	/// Average net sales per transaction (PLN).
+	measure 'Avg Basket' = DIVIDE ( [Net Sales], [Total Transactions] )
+		formatString: #,0.00
+		displayFolder: 01 Sales
+		lineageTag: 7b1d6d01-0256-4a17-9cbe-77353084e03b
+
+	/// Average items per transaction.
+	measure 'Items per Basket' = DIVIDE ( [Items Sold], [Total Transactions] )
+		formatString: #,0.00
+		displayFolder: 01 Sales
+		lineageTag: 75be7ab9-eae8-44ad-92ee-72a063cdd76f
+
+	/// Net sales sold under promotion.
+	measure 'Promo Sales' = SUM ( FactDailySales[PromoSales] )
+		formatString: #,0
+		displayFolder: 01 Sales
+		lineageTag: 82719ab2-5988-43b4-a93e-9fab3009ef08
+
+	/// Share of net sales sold under promotion.
+	measure 'Promo Share %' = DIVIDE ( [Promo Sales], [Net Sales] )
+		formatString: 0.0%
+		displayFolder: 01 Sales
+		lineageTag: 2787ef35-a98c-4969-8718-3bb58bea3efa
+
+	/// Net sales per store per trading day (PLN).
+	measure 'Avg Daily Sales per Store' = DIVIDE ( [Net Sales], [Store Trading Days] )
+		formatString: #,0
+		displayFolder: 01 Sales
+		lineageTag: e3804df6-c05f-4545-9b28-98347fce4e40
+
+	/// Net sales per square metre per trading day (PLN).
+	measure 'Sales per sqm (Daily)' = DIVIDE ( [Net Sales], SUMX ( FactDailySales, RELATED ( DimStore[SalesAreaSqm] ) ) )
+		formatString: #,0.0
+		displayFolder: 01 Sales
+		lineageTag: 6ce27427-376b-4d70-8619-2f48196b8b0d
+
+	/// Avg store sales on non-trading Sundays vs regular weekdays.
+	measure 'Non-Trading Sunday Uplift %' =
+			VAR _Sunday = CALCULATE ( [Avg Daily Sales per Store], DimDate[IsNonTradingSunday] = 1 )
+			VAR _Weekday = CALCULATE ( [Avg Daily Sales per Store], DimDate[IsWeekend] = 0, DimDate[IsHoliday] = 0 )
+			RETURN DIVIDE ( _Sunday, _Weekday ) - 1
+		formatString: 0.0%
+		displayFolder: 01 Sales
+		lineageTag: 07f986f9-1af1-4342-a4fa-4e29b53d0b1c
+
+	/// Net sales minus COGS (PLN).
+	measure 'Gross Profit' = SUM ( FactDailySales[GrossProfit] )
+		formatString: #,0
+		displayFolder: 02 Profitability
+		lineageTag: d8a0c895-5727-4ca0-9933-a366f2070302
+
+	/// Cost of goods sold (PLN).
+	measure 'Total COGS' = SUM ( FactDailySales[COGS] )
+		formatString: #,0
+		displayFolder: 02 Profitability
+		lineageTag: 7e42350a-4d52-494c-a2cb-18a6c6c7af2e
+
+	/// Gross profit as % of net sales.
+	measure 'Gross Margin %' = DIVIDE ( [Gross Profit], [Net Sales] )
+		formatString: 0.0%
+		displayFolder: 02 Profitability
+		lineageTag: 07ed40df-1c92-4698-8e41-cf22f38128aa
+
+	/// Total store operating costs (PLN).
+	measure 'Store Opex' =
+			SUM ( FactStoreOpex[RentCost] ) + SUM ( FactStoreOpex[EnergyCost] )
+				+ SUM ( FactStoreOpex[FranchiseeCommission] ) + SUM ( FactStoreOpex[MarketingCost] )
+				+ SUM ( FactStoreOpex[TechnologyCost] ) + SUM ( FactStoreOpex[OtherOpex] )
+		formatString: #,0
+		displayFolder: 02 Profitability
+		lineageTag: ddede60a-a8a8-475e-a7a0-06935a7743bb
+
+	/// Store rent (PLN).
+	measure 'Rent Cost' = SUM ( FactStoreOpex[RentCost] )
+		formatString: #,0
+		displayFolder: 02 Profitability
+		lineageTag: 57a8fcc1-abbc-455b-9632-ddf4ad128aeb
+
+	/// Store energy (PLN).
+	measure 'Energy Cost' = SUM ( FactStoreOpex[EnergyCost] )
+		formatString: #,0
+		displayFolder: 02 Profitability
+		lineageTag: 89c58197-6d47-466a-9c8d-0b78a7001eea
+
+	/// Commission paid to franchisees (PLN).
+	measure 'Franchisee Commission' = SUM ( FactStoreOpex[FranchiseeCommission] )
+		formatString: #,0
+		displayFolder: 02 Profitability
+		lineageTag: 84d5bd4e-97c7-4947-bb63-464091b2630d
+
+	/// Store opex as % of net sales.
+	measure 'Opex % of Sales' = DIVIDE ( [Store Opex], [Net Sales] )
+		formatString: 0.0%
+		displayFolder: 02 Profitability
+		lineageTag: e2d6ce12-733d-4e94-b190-f89907d49e62
+
+	/// Gross profit minus store opex (PLN).
+	measure 'Store EBITDA' = [Gross Profit] - [Store Opex]
+		formatString: #,0
+		displayFolder: 02 Profitability
+		lineageTag: 2fc278e2-bbe5-4716-aa53-5014d788b138
+
+	/// Store EBITDA as % of net sales.
+	measure 'Store EBITDA Margin %' = DIVIDE ( [Store EBITDA], [Net Sales] )
+		formatString: 0.0%
+		displayFolder: 02 Profitability
+		lineageTag: 43823511-31ed-4878-bde6-636f4c7091b1
+
+	/// Net Sales in the same period of the previous year (actual period only).
+	measure 'Net Sales PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [Net Sales], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: #,0
+		displayFolder: 03 Time Intelligence\PY
+		lineageTag: 5cd9f715-570b-47ba-bb8e-2b1c9f67c08a
+
+	/// Gross Profit in the same period of the previous year (actual period only).
+	measure 'Gross Profit PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [Gross Profit], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: #,0
+		displayFolder: 03 Time Intelligence\PY
+		lineageTag: 1b888ba1-f92f-4af4-ac17-0d50fe9c4bf6
+
+	/// Total Transactions in the same period of the previous year (actual period only).
+	measure 'Total Transactions PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [Total Transactions], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: #,0
+		displayFolder: 03 Time Intelligence\PY
+		lineageTag: ad6c9cac-9e68-4f4f-acd8-b04d402283dd
+
+	/// Store EBITDA in the same period of the previous year (actual period only).
+	measure 'Store EBITDA PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [Store EBITDA], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: #,0
+		displayFolder: 03 Time Intelligence\PY
+		lineageTag: e9be3867-c5c2-4b40-a3b0-18d0e119116c
+
+	/// Average basket in the same period of the previous year.
+	measure 'Avg Basket PY' = DIVIDE ( [Net Sales PY], [Total Transactions PY] )
+		formatString: #,0.00
+		displayFolder: 03 Time Intelligence\PY
+		lineageTag: 45a2ae51-bdfa-4d9a-b7c2-4c3e6f4c309a
+
+	/// Gross margin % in the same period of the previous year.
+	measure 'Gross Margin % PY' = DIVIDE ( [Gross Profit PY], [Net Sales PY] )
+		formatString: 0.0%
+		displayFolder: 03 Time Intelligence\PY
+		lineageTag: 28d32933-87d0-4431-bd0b-f757d002ad15
+
+	/// Store EBITDA margin in the same period of the previous year.
+	measure 'Store EBITDA Margin % PY' = DIVIDE ( [Store EBITDA PY], [Net Sales PY] )
+		formatString: 0.0%
+		displayFolder: 03 Time Intelligence\PY
+		lineageTag: 1af90032-2153-4b12-886d-486c3c578080
+
+	/// Absolute change vs previous year (PLN).
+	measure 'Net Sales YoY' = [Net Sales] - [Net Sales PY]
+		formatString: #,0
+		displayFolder: 03 Time Intelligence\YoY
+		lineageTag: 64b1ee4c-96d6-4b83-b51b-4b9ec7e6fccb
+
+	/// Net sales growth vs previous year.
+	measure 'Net Sales YoY %' = DIVIDE ( [Net Sales] - [Net Sales PY], [Net Sales PY] )
+		formatString: 0.0%
+		displayFolder: 03 Time Intelligence\YoY
+		lineageTag: e031f01d-f5e4-42f5-899d-727d0f49f61d
+
+	/// Gross profit growth vs previous year.
+	measure 'Gross Profit YoY %' = DIVIDE ( [Gross Profit] - [Gross Profit PY], [Gross Profit PY] )
+		formatString: 0.0%
+		displayFolder: 03 Time Intelligence\YoY
+		lineageTag: ac842906-f9fd-4eb0-a299-58dfba3bd6c2
+
+	/// Transactions growth vs previous year.
+	measure 'Total Transactions YoY %' = DIVIDE ( [Total Transactions] - [Total Transactions PY], [Total Transactions PY] )
+		formatString: 0.0%
+		displayFolder: 03 Time Intelligence\YoY
+		lineageTag: fe7f5ba2-6a08-4036-b6d5-084914f26d2d
+
+	/// Average basket growth vs previous year.
+	measure 'Avg Basket YoY %' = DIVIDE ( [Avg Basket] - [Avg Basket PY], [Avg Basket PY] )
+		formatString: 0.0%
+		displayFolder: 03 Time Intelligence\YoY
+		lineageTag: 8903e33a-a641-492d-a725-5457233db22c
+
+	/// Change in gross margin vs previous year, in percentage points.
+	measure 'Gross Margin YoY (pp)' = ( [Gross Margin %] - [Gross Margin % PY] ) * 100
+		formatString: +0.0;-0.0;0.0
+		displayFolder: 03 Time Intelligence\YoY
+		lineageTag: b630661b-cfd4-410d-9cdb-35117ee67f73
+
+	/// Change in store EBITDA margin vs previous year, in percentage points.
+	measure 'Store EBITDA Margin YoY (pp)' = ( [Store EBITDA Margin %] - [Store EBITDA Margin % PY] ) * 100
+		formatString: +0.0;-0.0;0.0
+		displayFolder: 03 Time Intelligence\YoY
+		lineageTag: 3b91194c-bd92-4b87-9d8c-84dd7a506f56
+
+	/// Like-for-like growth: stores open for 12+ months before the period start and not closed.
+	measure 'LFL Growth %' =
+			VAR _Start = MIN ( DimDate[Date] )
+			VAR _End = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+			VAR _Cut = EDATE ( _Start, -12 )
+			VAR _Stores =
+				FILTER (
+					DimStore,
+					DimStore[OpeningDate] <= _Cut
+						&& ( ISBLANK ( DimStore[ClosingDate] ) || DimStore[ClosingDate] > _End )
+				)
+			VAR _Current = CALCULATE ( [Net Sales], _Stores )
+			VAR _Previous = CALCULATE ( [Net Sales PY], _Stores )
+			RETURN DIVIDE ( _Current - _Previous, _Previous )
+		formatString: 0.0%
+		displayFolder: 03 Time Intelligence\YoY
+		lineageTag: 57f39609-8869-46fc-8e3a-540d92ef5ade
+
+	/// Year-to-date net sales.
+	measure 'Net Sales YTD' = IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), CALCULATE ( [Net Sales], DATESYTD ( DimDate[Date] ) ) )
+		formatString: #,0
+		displayFolder: 03 Time Intelligence\YTD
+		lineageTag: d72a36cb-c6c1-43e4-88f0-a3352803d74c
+
+	/// Previous year-to-date net sales (same days).
+	measure 'Net Sales PY YTD' = IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), CALCULATE ( [Net Sales PY], DATESYTD ( DimDate[Date] ) ) )
+		formatString: #,0
+		displayFolder: 03 Time Intelligence\YTD
+		lineageTag: cde1ee78-a0b3-498b-a189-69c5903b598a
+
+	/// YTD growth vs previous YTD.
+	measure 'Net Sales YTD YoY %' = DIVIDE ( [Net Sales YTD] - [Net Sales PY YTD], [Net Sales PY YTD] )
+		formatString: 0.0%
+		displayFolder: 03 Time Intelligence\YTD
+		lineageTag: 02136d45-8dc5-43b9-92fb-4aa50597952e
+
+	/// Year-to-date gross profit.
+	measure 'Gross Profit YTD' = IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), CALCULATE ( [Gross Profit], DATESYTD ( DimDate[Date] ) ) )
+		formatString: #,0
+		displayFolder: 03 Time Intelligence\YTD
+		lineageTag: d2dc86ea-5914-4db7-a7e3-70fbfc605ff0
+
+	/// Net sales in the previous month.
+	measure 'Net Sales PM' = CALCULATE ( [Net Sales], DATEADD ( DimDate[Date], -1, MONTH ) )
+		formatString: #,0
+		displayFolder: 03 Time Intelligence\MoM
+		lineageTag: 9ef11e83-7a88-4d28-80c9-9a42c46b2a20
+
+	/// Net sales growth vs previous month.
+	measure 'Net Sales MoM %' = IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), DIVIDE ( [Net Sales] - [Net Sales PM], [Net Sales PM] ) )
+		formatString: 0.0%
+		displayFolder: 03 Time Intelligence\MoM
+		lineageTag: ccf217f5-155a-47ec-8cff-cb17b75f1d0a
+
+	/// Rolling 12-month net sales.
+	measure 'Net Sales R12M' =
+			VAR _Last = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+			RETURN
+				IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), CALCULATE ( [Net Sales], DATESINPERIOD ( DimDate[Date], _Last, -12, MONTH ) ) )
+		formatString: #,0
+		displayFolder: 03 Time Intelligence\Rolling
+		lineageTag: ebc56fda-01e6-42cc-89c1-2561b596179d
+
+	/// Average monthly net sales over the last 3 months.
+	measure 'Net Sales 3M Avg' =
+			VAR _Last = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+			RETURN
+				IF ( MIN ( DimDate[Date] ) > [Last Actual Date], BLANK (), CALCULATE ( [Net Sales], DATESINPERIOD ( DimDate[Date], _Last, -3, MONTH ) ) / 3 )
+		formatString: #,0
+		displayFolder: 03 Time Intelligence\Rolling
+		lineageTag: 6eadbce1-48de-49f0-bbd1-0b08f3e71a4c
+
+	/// Budget (Region x Category x Month). Blank when filtered by store or franchisee.
+	measure 'Budget Net Sales' =
+			IF (
+				ISFILTERED ( DimStore ) || ISFILTERED ( DimFranchisee ),
+				BLANK (),
+				SUM ( FactBudget[BudgetNetSales] )
+			)
+		formatString: #,0
+		displayFolder: 04 Budget
+		lineageTag: aeac5e42-0fe4-4ff5-b4cd-40ea4ebd79b3
+
+	/// Gross profit budget. Blank when filtered by store or franchisee.
+	measure 'Budget Gross Profit' =
+			IF (
+				ISFILTERED ( DimStore ) || ISFILTERED ( DimFranchisee ),
+				BLANK (),
+				SUM ( FactBudget[BudgetGrossProfit] )
+			)
+		formatString: #,0
+		displayFolder: 04 Budget
+		lineageTag: 3a3f2a6b-a477-40b1-9bd7-ed3eb138f466
+
+	/// Budget limited to months with actuals, for fair comparison.
+	measure 'Budget Net Sales (Actual Period)' = CALCULATE ( [Budget Net Sales], KEEPFILTERS ( DimDate[IsActualPeriod] = 1 ) )
+		formatString: #,0
+		displayFolder: 04 Budget
+		lineageTag: 2739c983-cfd8-4069-8d9f-8742cd3a6e34
+
+	/// GP budget limited to months with actuals.
+	measure 'Budget Gross Profit (Actual Period)' = CALCULATE ( [Budget Gross Profit], KEEPFILTERS ( DimDate[IsActualPeriod] = 1 ) )
+		formatString: #,0
+		displayFolder: 04 Budget
+		lineageTag: ddb06d3e-99a3-4dcb-bdcd-89f8546a358e
+
+	/// Actual minus budget (PLN). Uses category-level sales to support category filters.
+	measure 'Sales vs Budget' = [Category Sales] - [Budget Net Sales (Actual Period)]
+		formatString: #,0
+		displayFolder: 04 Budget
+		lineageTag: 6c4e1291-7f1c-49da-9f7f-7316cf500247
+
+	/// Actual vs budget variance %.
+	measure 'Sales vs Budget %' = DIVIDE ( [Sales vs Budget], [Budget Net Sales (Actual Period)] )
+		formatString: 0.0%
+		displayFolder: 04 Budget
+		lineageTag: 3b910b68-ae76-49b2-9abf-bf869571f0dc
+
+	/// Actual as % of budget.
+	measure 'Budget Achievement %' = DIVIDE ( [Category Sales], [Budget Net Sales (Actual Period)] )
+		formatString: 0.0%
+		displayFolder: 04 Budget
+		lineageTag: 0ac26cd1-566b-4e82-8224-45a569861c6b
+
+	/// Gross profit variance vs budget.
+	measure 'Gross Profit vs Budget %' =
+			DIVIDE (
+				[Category Gross Profit] - [Budget Gross Profit (Actual Period)],
+				[Budget Gross Profit (Actual Period)]
+			)
+		formatString: 0.0%
+		displayFolder: 04 Budget
+		lineageTag: c4c6abf7-a85e-467f-b431-19971e4fb041
+
+	/// Full-year budget for the selected year.
+	measure 'Budget Net Sales FY' =
+			VAR _Year = MAX ( DimDate[Year] )
+			RETURN CALCULATE ( [Budget Net Sales], ALL ( DimDate ), DimDate[Year] = _Year )
+		formatString: #,0
+		displayFolder: 04 Budget
+		lineageTag: 7b48dede-fb54-4aed-99e3-a154eeebc294
+
+	/// Full-year outlook: YTD actuals + budget for the remaining months.
+	measure 'FY Outlook' =
+			VAR _Year = MAX ( DimDate[Year] )
+			VAR _Actual = CALCULATE ( [Category Sales], ALL ( DimDate ), DimDate[Year] = _Year )
+			VAR _Remaining = CALCULATE ( [Budget Net Sales], ALL ( DimDate ), DimDate[Year] = _Year, DimDate[IsActualPeriod] = 0 )
+			RETURN _Actual + _Remaining
+		formatString: #,0
+		displayFolder: 04 Budget
+		lineageTag: e613b12a-95df-46bd-b9a1-a33b2501efde
+
+	/// Full-year outlook vs full-year budget.
+	measure 'FY Outlook vs Budget %' = DIVIDE ( [FY Outlook] - [Budget Net Sales FY], [Budget Net Sales FY] )
+		formatString: 0.0%
+		displayFolder: 04 Budget
+		lineageTag: 14f7ac2c-b74f-4681-b837-31e32f6707b4
+
+	/// Net sales from FactCategorySales (monthly grain, supports category filters).
+	measure 'Category Sales' = SUM ( FactCategorySales[NetSales] )
+		formatString: #,0
+		displayFolder: 05 Category
+		lineageTag: 17450b84-abac-4ded-804e-650b6e37e343
+
+	/// Gross profit from FactCategorySales.
+	measure 'Category Gross Profit' = SUM ( FactCategorySales[GrossProfit] )
+		formatString: #,0
+		displayFolder: 05 Category
+		lineageTag: d3bba664-0f12-4b68-93a5-84957cbc13a0
+
+	/// Gross margin by category.
+	measure 'Category Gross Margin %' = DIVIDE ( [Category Gross Profit], [Category Sales] )
+		formatString: 0.0%
+		displayFolder: 05 Category
+		lineageTag: 759bf245-d79c-42c3-b962-f8b700df3fb4
+
+	/// Units sold.
+	measure 'Units Sold' = SUM ( FactCategorySales[UnitsSold] )
+		formatString: #,0
+		displayFolder: 05 Category
+		lineageTag: c9a5256c-12ff-4b17-a77d-8ed2196ff27b
+
+	/// Share of total sales within the current selection.
+	measure 'Category Mix %' = DIVIDE ( [Category Sales], CALCULATE ( [Category Sales], ALL ( DimCategory ) ) )
+		formatString: 0.0%
+		displayFolder: 05 Category
+		lineageTag: 1fe48ee0-f80f-4e22-9dd2-775eb5b8ce02
+
+	/// Category sales in the same period of the previous year.
+	measure 'Category Sales PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [Category Sales], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: #,0
+		displayFolder: 05 Category
+		lineageTag: 13658306-331f-47b0-8d09-fa21bc4e3193
+
+	/// Category sales growth vs previous year.
+	measure 'Category Sales YoY %' = DIVIDE ( [Category Sales] - [Category Sales PY], [Category Sales PY] )
+		formatString: 0.0%
+		displayFolder: 05 Category
+		lineageTag: 684ed389-41f8-4a57-a11d-20d4c9daa0c7
+
+	/// Category mix in the previous year.
+	measure 'Category Mix % PY' = DIVIDE ( [Category Sales PY], CALCULATE ( [Category Sales PY], ALL ( DimCategory ) ) )
+		formatString: 0.0%
+		displayFolder: 05 Category
+		lineageTag: 15770df8-4215-471e-ba05-804da35c07e3
+
+	/// Change in category mix vs previous year, in percentage points.
+	measure 'Category Mix Change (pp)' = ( [Category Mix %] - [Category Mix % PY] ) * 100
+		formatString: +0.0;-0.0;0.0
+		displayFolder: 05 Category
+		lineageTag: d4a3e949-7dc6-45b1-bcde-a3d5a397890b
+
+	/// Value of written-off products (PLN).
+	measure 'Waste Value' = SUM ( FactCategorySales[WasteValue] )
+		formatString: #,0
+		displayFolder: 05 Category\Waste
+		lineageTag: a062d9fe-05b3-469c-ba04-c2cf5b7d8496
+
+	/// Waste as % of category sales.
+	measure 'Waste % of Sales' = DIVIDE ( [Waste Value], [Category Sales] )
+		formatString: 0.00%
+		displayFolder: 05 Category\Waste
+		lineageTag: bb4251e2-b6a2-41e7-a7ba-2dd7b87b4f77
+
+	/// Waste % for fresh categories (Ready Meals, Fresh & Dairy, Bakery).
+	measure 'Fresh Waste %' = CALCULATE ( [Waste % of Sales], DimCategory[IsFresh] = 1 )
+		formatString: 0.00%
+		displayFolder: 05 Category\Waste
+		lineageTag: 56b71410-08cf-4cb8-b3b3-01a7fc7ef9be
+
+	/// Fresh waste % in the previous year.
+	measure 'Fresh Waste % PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [Fresh Waste %], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: 0.00%
+		displayFolder: 05 Category\Waste
+		lineageTag: 6131aec2-6832-46b0-9eff-4d569adb75ab
+
+	/// Change in fresh waste % vs previous year, in percentage points.
+	measure 'Fresh Waste Change (pp)' = ( [Fresh Waste %] - [Fresh Waste % PY] ) * 100
+		formatString: +0.00;-0.00;0.00
+		displayFolder: 05 Category\Waste
+		lineageTag: 2bcd4e92-c02b-453e-93dc-51dc40faa257
+
+	/// Sales of own-brand products (PLN).
+	measure 'Private Label Sales' = SUM ( FactCategorySales[PrivateLabelSales] )
+		formatString: #,0
+		displayFolder: 05 Category\Private Label
+		lineageTag: a4bc91c8-fcfa-4c44-9275-ba0ad8836f56
+
+	/// Own-brand share of category sales.
+	measure 'Private Label Share %' = DIVIDE ( [Private Label Sales], [Category Sales] )
+		formatString: 0.0%
+		displayFolder: 05 Category\Private Label
+		lineageTag: 06ee936a-1ec1-452b-90fa-9971361a75e2
+
+	/// Own-brand share in the previous year.
+	measure 'Private Label Share % PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [Private Label Share %], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: 0.0%
+		displayFolder: 05 Category\Private Label
+		lineageTag: 22e14cb9-c502-4f9c-b00f-c228a5b19435
+
+	/// Change in own-brand share, in percentage points.
+	measure 'Private Label Share Change (pp)' = ( [Private Label Share %] - [Private Label Share % PY] ) * 100
+		formatString: +0.0;-0.0;0.0
+		displayFolder: 05 Category\Private Label
+		lineageTag: 364e407f-7901-4087-8d2f-ffe726e38b04
+
+	/// Stores open at the end of the selected period.
+	measure 'Active Stores' =
+			VAR _Last = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+			RETURN
+				COUNTROWS (
+				FILTER (
+					DimStore,
+					DimStore[OpeningDate] <= _Last
+						&& ( ISBLANK ( DimStore[ClosingDate] ) || DimStore[ClosingDate] > _Last )
+				)
+				)
+		formatString: #,0
+		displayFolder: 06 Store Network
+		lineageTag: f972f0f7-1d57-4577-bc2f-a47ef7b33953
+
+	/// Stores open at the end of the same period last year.
+	measure 'Active Stores PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [Active Stores], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: #,0
+		displayFolder: 06 Store Network
+		lineageTag: 39fde4e3-fb31-4155-9e92-1f28db441143
+
+	/// Net change in active stores vs previous year.
+	measure 'Active Stores YoY' = [Active Stores] - [Active Stores PY]
+		formatString: +#,0;-#,0;0
+		displayFolder: 06 Store Network
+		lineageTag: 8846ced2-1aa9-41e0-919c-4d32850f3c5d
+
+	/// Stores opened within the selected period.
+	measure 'New Openings' =
+			VAR _Min = MIN ( DimDate[Date] )
+			VAR _Max = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+			RETURN
+				COUNTROWS (
+					FILTER ( DimStore, DimStore[OpeningDate] >= _Min && DimStore[OpeningDate] <= _Max )
+				) + 0
+		formatString: #,0
+		displayFolder: 06 Store Network
+		lineageTag: ff90e115-bf2d-4013-9651-79a48a65521b
+
+	/// Stores closed within the selected period.
+	measure 'Store Closures' =
+			VAR _Min = MIN ( DimDate[Date] )
+			VAR _Max = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+			RETURN
+				COUNTROWS (
+					FILTER (
+						DimStore,
+						NOT ISBLANK ( DimStore[ClosingDate] )
+							&& DimStore[ClosingDate] >= _Min
+							&& DimStore[ClosingDate] <= _Max
+					)
+				) + 0
+		formatString: #,0
+		displayFolder: 06 Store Network
+		lineageTag: dd88ed2a-4ed4-4c24-83e2-6a581b140991
+
+	/// New openings minus closures.
+	measure 'Net Openings' = [New Openings] - [Store Closures]
+		formatString: +#,0;-#,0;0
+		displayFolder: 06 Store Network
+		lineageTag: 26b951a1-d4a3-41cc-9d4e-c45871921df6
+
+	/// Franchisees operating at least one active store.
+	measure 'Active Franchisees' =
+			VAR _Last = MIN ( MAX ( DimDate[Date] ), [Last Actual Date] )
+			RETURN
+				CALCULATE (
+					DISTINCTCOUNT ( DimStore[FranchiseeID] ),
+				FILTER (
+					DimStore,
+					DimStore[OpeningDate] <= _Last
+						&& ( ISBLANK ( DimStore[ClosingDate] ) || DimStore[ClosingDate] > _Last )
+				),
+					DimStore[FranchiseeID] <> "COMPANY"
+				)
+		formatString: #,0
+		displayFolder: 06 Store Network
+		lineageTag: 560a6513-4aff-4718-b40b-f22443186997
+
+	/// Average active franchise stores per franchisee.
+	measure 'Stores per Franchisee' =
+			DIVIDE (
+				CALCULATE ( [Active Stores], DimStore[FranchiseeID] <> "COMPANY" ),
+				[Active Franchisees]
+			)
+		formatString: #,0.00
+		displayFolder: 06 Store Network
+		lineageTag: bcff56e9-d7b6-436b-90f5-e41c6513a831
+
+	/// Avg daily sales per store in the previous year.
+	measure 'Avg Daily Sales per Store PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [Avg Daily Sales per Store], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: #,0
+		displayFolder: 06 Store Network
+		lineageTag: f691142d-e179-4ae7-b9b5-dbee5a055940
+
+	/// Growth in avg daily sales per store.
+	measure 'Avg Daily Sales per Store YoY %' = DIVIDE ( [Avg Daily Sales per Store] - [Avg Daily Sales per Store PY], [Avg Daily Sales per Store PY] )
+		formatString: 0.0%
+		displayFolder: 06 Store Network
+		lineageTag: 41450fff-af42-4e38-8df8-a3fa44d04090
+
+	/// Net sales from Żabka Nano autonomous stores.
+	measure 'Nano Net Sales' = CALCULATE ( [Net Sales], DimStore[Format] = "Nano" )
+		formatString: #,0
+		displayFolder: 06 Store Network
+		lineageTag: 43ebc8a9-8336-47f6-87eb-7ec7d3134c95
+
+	/// Nano share of total net sales.
+	measure 'Nano Sales Share %' = DIVIDE ( [Nano Net Sales], CALCULATE ( [Net Sales], ALL ( DimStore[Format] ) ) )
+		formatString: 0.0%
+		displayFolder: 06 Store Network
+		lineageTag: 5448be0f-287e-4c43-a749-97fa2b027ce5
+
+	/// Net sales from Żappka-linked receipts.
+	measure 'App Sales' = SUM ( FactDailySales[AppSales] )
+		formatString: #,0
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: f4c845e3-6df9-4117-8ce2-79b9b29b9015
+
+	/// Receipts linked to the Żappka app.
+	measure 'App Transactions' = SUM ( FactDailySales[AppTransactions] )
+		formatString: #,0
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: 98723fb8-8bae-49e4-a52d-26677a90e13f
+
+	/// Share of receipts linked to the app.
+	measure 'App Transaction Share %' = DIVIDE ( [App Transactions], [Total Transactions] )
+		formatString: 0.0%
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: 2a89f744-f5ec-45c5-9b7d-dbbde51d26cb
+
+	/// Share of net sales from app-linked receipts.
+	measure 'App Sales Share %' = DIVIDE ( [App Sales], [Net Sales] )
+		formatString: 0.0%
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: bb54e344-c4b2-4f39-97b5-642b6182c21f
+
+	/// Average basket of app-linked receipts (PLN).
+	measure 'App Basket' = DIVIDE ( [App Sales], [App Transactions] )
+		formatString: #,0.00
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: 30997090-9676-40ee-9afd-b62d10eecc74
+
+	/// Average basket of receipts without the app (PLN).
+	measure 'Non-App Basket' = DIVIDE ( [Net Sales] - [App Sales], [Total Transactions] - [App Transactions] )
+		formatString: #,0.00
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: 4bf52809-9efc-4adf-bfad-4d643f3bc9da
+
+	/// How much larger the app basket is vs non-app.
+	measure 'App Basket Uplift %' = DIVIDE ( [App Basket], [Non-App Basket] ) - 1
+		formatString: 0.0%
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: c07cdb2f-745e-4e50-b5b1-7883394ced8a
+
+	/// App share of receipts in the previous year.
+	measure 'App Transaction Share % PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [App Transaction Share %], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: 0.0%
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: d0f03a9d-6a72-43b4-af96-ea9f75f4c90f
+
+	/// Change in app share of receipts, in percentage points.
+	measure 'App Transaction Share Change (pp)' = ( [App Transaction Share %] - [App Transaction Share % PY] ) * 100
+		formatString: +0.0;-0.0;0.0
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: 2e0a5e65-cce2-453b-b3ea-bfa59ae56f53
+
+	/// Registered app users at the end of the period (semi-additive).
+	measure 'Registered Users' =
+			VAR _LastMonth = MAX ( FactAppMetrics[MonthStart] )
+			RETURN CALCULATE ( SUM ( FactAppMetrics[RegisteredUsers] ), DimDate[Date] = _LastMonth )
+		formatString: #,0
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: b2fc7d83-9c29-47b8-bfea-ff0648366284
+
+	/// Monthly active users in the last month of the period (semi-additive).
+	measure 'Monthly Active Users' =
+			VAR _LastMonth = MAX ( FactAppMetrics[MonthStart] )
+			RETURN CALCULATE ( SUM ( FactAppMetrics[MonthlyActiveUsers] ), DimDate[Date] = _LastMonth )
+		formatString: #,0
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: b7b5037c-5c5b-458b-b15e-6f8b1a1322a6
+
+	/// Average MAU across the months in the period.
+	measure 'Avg Monthly Active Users' =
+			AVERAGEX (
+				VALUES ( DimDate[YearMonth] ),
+				CALCULATE ( SUM ( FactAppMetrics[MonthlyActiveUsers] ) )
+			)
+		formatString: #,0
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: fc95a194-e9a1-4787-8a88-04ee709b7212
+
+	/// MAU as % of registered users.
+	measure 'Activation Rate %' = DIVIDE ( [Monthly Active Users], [Registered Users] )
+		formatString: 0.0%
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: 9e19e01a-2fbe-4fc9-b446-7264a85b5392
+
+	/// Registered users at the same point last year.
+	measure 'Registered Users PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [Registered Users], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: #,0
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: 62c79a61-5d49-41e7-83ce-b93c32b3a202
+
+	/// Growth in registered users.
+	measure 'Registered Users YoY %' = DIVIDE ( [Registered Users] - [Registered Users PY], [Registered Users PY] )
+		formatString: 0.0%
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: 91aeb85b-e6d8-4583-92a7-4d909c46ce03
+
+	/// MAU at the same point last year.
+	measure 'Monthly Active Users PY' =
+			IF (
+				EDATE ( MIN ( DimDate[Date] ), -12 ) < [First Actual Date],
+				BLANK (),
+				CALCULATE ( [Monthly Active Users], CALCULATETABLE ( DATEADD ( DimDate[Date], -1, YEAR ), DimDate[IsActualPeriod] = 1 ) )
+			)
+		formatString: #,0
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: 2457160a-3053-4775-bfe4-190c4f04b736
+
+	/// Growth in MAU.
+	measure 'Monthly Active Users YoY %' = DIVIDE ( [Monthly Active Users] - [Monthly Active Users PY], [Monthly Active Users PY] )
+		formatString: 0.0%
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: 4a928cb0-8e59-4485-ae8b-8204919727eb
+
+	/// New app sign-ups.
+	measure 'New Registrations' = SUM ( FactAppMetrics[NewRegistrations] )
+		formatString: #,0
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: 0541a5eb-dd68-426e-a419-c7d687ec7abc
+
+	/// App coupons redeemed.
+	measure 'Coupons Redeemed' = SUM ( FactAppMetrics[CouponsRedeemed] )
+		formatString: #,0
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: dbab40bd-0050-4b18-b28a-32aea6e5c072
+
+	/// Coupons redeemed per app-linked receipt.
+	measure 'Coupons per App Transaction' = DIVIDE ( [Coupons Redeemed], [App Transactions] )
+		formatString: 0.00
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: ae2950bd-18ab-40bd-9233-5483fca9e090
+
+	/// Average app store rating.
+	measure 'App Rating' = AVERAGE ( FactAppMetrics[AppRating] )
+		formatString: 0.00
+		displayFolder: 07 Digital (Zappka)
+		lineageTag: e47a8d91-6b7f-43c8-b1e4-343157c984d0
+
+	/// Footer label with the last actual date.
+	measure 'Data As Of' = FORMAT ( [Last Actual Date], "dd mmm yyyy", "en-US" )
+		displayFolder: 99 Formatting
+		lineageTag: b49e85ca-c756-42b9-9906-7cfb9404db3c
+
+	/// Label for the selected year.
+	measure 'Selected Period Label' = "FY " & SELECTEDVALUE ( DimDate[Year], "All years" )
+		displayFolder: 99 Formatting
+		lineageTag: e1be2d7f-61de-451e-bd16-afe4f3b356c8
+
+	/// Arrow label for [Net Sales YoY %].
+	measure 'Label Net Sales YoY' = IF ( ISBLANK ( [Net Sales YoY %] ), BLANK (), FORMAT ( [Net Sales YoY %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+		displayFolder: 99 Formatting
+		lineageTag: 55347ca9-793d-4cd7-8459-7240d049ff79
+
+	/// Arrow label for [Sales vs Budget %].
+	measure 'Label Sales vs Budget' = IF ( ISBLANK ( [Sales vs Budget %] ), BLANK (), FORMAT ( [Sales vs Budget %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+		displayFolder: 99 Formatting
+		lineageTag: 8df0f177-5ee0-4040-9bb7-1de2c7da0153
+
+	/// Arrow label for [LFL Growth %].
+	measure 'Label LFL Growth' = IF ( ISBLANK ( [LFL Growth %] ), BLANK (), FORMAT ( [LFL Growth %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+		displayFolder: 99 Formatting
+		lineageTag: 40beddd9-8d48-41dd-8ba3-2ef5a78d9db1
+
+	/// Arrow label for gross margin change.
+	measure 'Label Gross Margin YoY' = IF ( ISBLANK ( [Gross Margin % PY] ), BLANK (), FORMAT ( [Gross Margin YoY (pp)], "▲ 0.0;▼ 0.0;0.0", "en-US" ) & " pp" )
+		displayFolder: 99 Formatting
+		lineageTag: e09bd3dd-2853-4601-9675-77bc6b675bb4
+
+	/// Conditional formatting color for [Net Sales YoY %].
+	measure 'Color Net Sales YoY' = IF ( ISBLANK ( [Net Sales YoY %] ), "#8A8A8A", IF ( [Net Sales YoY %] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: 93009e49-7f96-45ae-b9f7-add9a2f8867f
+
+	/// Conditional formatting color for [Sales vs Budget %].
+	measure 'Color Sales vs Budget' = IF ( ISBLANK ( [Sales vs Budget %] ), "#8A8A8A", IF ( [Sales vs Budget %] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: 11887eab-96b7-4bf8-ad49-4a48f62fe066
+
+	/// Conditional formatting color for [Gross Margin YoY (pp)].
+	measure 'Color Gross Margin YoY' = IF ( ISBLANK ( [Gross Margin YoY (pp)] ), "#8A8A8A", IF ( [Gross Margin YoY (pp)] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: ff85b674-5cc6-497c-8e47-6ca4a2e99ebc
+
+	/// Conditional formatting color for [LFL Growth %].
+	measure 'Color LFL Growth' = IF ( ISBLANK ( [LFL Growth %] ), "#8A8A8A", IF ( [LFL Growth %] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: db6643b0-5437-47b6-990e-fd1fb73995af
+
+	/// First date with actual sales in the dataset.
+	measure 'First Actual Date' = CALCULATE ( MIN ( FactDailySales[Date] ), ALL ( FactDailySales ) )
+		formatString: dd mmm yyyy
+		displayFolder: 00 Base
+		lineageTag: 693cc405-80f8-4cb1-89a2-6f6f2a195061
+
+	/// Arrow label for avg basket growth.
+	measure 'Label Avg Basket YoY' = IF ( ISBLANK ( [Avg Basket YoY %] ), BLANK (), FORMAT ( [Avg Basket YoY %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+		displayFolder: 99 Formatting
+		lineageTag: 4e9801fb-53d8-423a-a047-835604ff0250
+
+	/// Arrow label for store EBITDA margin change.
+	measure 'Label EBITDA Margin YoY' = IF ( ISBLANK ( [Store EBITDA Margin % PY] ), BLANK (), FORMAT ( [Store EBITDA Margin YoY (pp)], "▲ 0.0;▼ 0.0;0.0", "en-US" ) & " pp" )
+		displayFolder: 99 Formatting
+		lineageTag: 9598a032-d603-475a-a62e-e87748fa36b9
+
+	/// Budget achievement label.
+	measure 'Label Budget Achievement' = IF ( ISBLANK ( [Budget Achievement %] ), BLANK (), FORMAT ( [Budget Achievement %], "0.0%", "en-US" ) )
+		displayFolder: 99 Formatting
+		lineageTag: be76e0f1-9dce-4a7b-9090-5c4e3b0843fb
+
+	/// Conditional formatting color for [Avg Basket YoY %].
+	measure 'Color Avg Basket YoY' = IF ( ISBLANK ( [Avg Basket YoY %] ), "#8A8A8A", IF ( [Avg Basket YoY %] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: d2c9e71a-5650-45b4-b45d-42a21299f174
+
+	/// Conditional formatting color for [Store EBITDA Margin YoY (pp)].
+	measure 'Color EBITDA Margin YoY' = IF ( ISBLANK ( [Store EBITDA Margin YoY (pp)] ), "#8A8A8A", IF ( [Store EBITDA Margin YoY (pp)] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: 381dfaf8-b676-4e10-af96-adfab38b1c7a
+
+	/// Closures as a negative value, for openings vs closures charts.
+	measure 'Store Closures (Chart)' = - [Store Closures]
+		formatString: #,0
+		displayFolder: 06 Store Network
+		lineageTag: b18d93b2-6fd6-4a9e-8760-d2619a00c714
+
+	/// Arrow label for net change in active stores vs PY.
+	measure 'Label Active Stores YoY' = IF ( ISBLANK ( [Active Stores PY] ), BLANK (), FORMAT ( [Active Stores YoY], "▲ #,0;▼ #,0;0", "en-US" ) & " stores" )
+		displayFolder: 99 Formatting
+		lineageTag: 5213ae72-8a13-4e82-a22d-e372c2520c18
+
+	/// Openings | closures label.
+	measure 'Label Openings Closures' = FORMAT ( [New Openings], "#,0", "en-US" ) & "  |  " & FORMAT ( [Store Closures], "#,0", "en-US" )
+		displayFolder: 99 Formatting
+		lineageTag: 2ece6c05-c464-407d-a92d-c4d02c58deba
+
+	/// Arrow label for avg daily sales per store growth.
+	measure 'Label Avg Daily Sales YoY' = IF ( ISBLANK ( [Avg Daily Sales per Store YoY %] ), BLANK (), FORMAT ( [Avg Daily Sales per Store YoY %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+		displayFolder: 99 Formatting
+		lineageTag: f529e1d5-1c0d-479a-a0ab-265c0df93aa7
+
+	/// Stores per franchisee label.
+	measure 'Label Stores per Franchisee' = FORMAT ( [Stores per Franchisee], "0.00", "en-US" )
+		displayFolder: 99 Formatting
+		lineageTag: db2bc42b-d1d7-456d-83dd-33f6ad28b904
+
+	/// Conditional formatting color for [Active Stores YoY].
+	measure 'Color Active Stores YoY' = IF ( ISBLANK ( [Active Stores YoY] ), "#8A8A8A", IF ( [Active Stores YoY] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: 3a6b6ccb-757a-4841-9080-140a016c5433
+
+	/// Conditional formatting color for [Avg Daily Sales per Store YoY %].
+	measure 'Color Avg Daily Sales YoY' = IF ( ISBLANK ( [Avg Daily Sales per Store YoY %] ), "#8A8A8A", IF ( [Avg Daily Sales per Store YoY %] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: 08dbfda3-8bfa-4e68-b2cd-20e8dfcfe8c5
+
+	/// Conditional formatting color for [Net Openings].
+	measure 'Color Net Openings' = IF ( ISBLANK ( [Net Openings] ), "#8A8A8A", IF ( [Net Openings] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: bd322da0-f2f8-4cc9-abbf-0a42ab198d5e
+
+	/// Arrow label for app transaction share change (pp).
+	measure 'Label App Share Change' = IF ( ISBLANK ( [App Transaction Share % PY] ), BLANK (), FORMAT ( [App Transaction Share Change (pp)], "▲ 0.0;▼ 0.0;0.0", "en-US" ) & " pp" )
+		displayFolder: 99 Formatting
+		lineageTag: 8afd16f2-e873-4f8d-96fe-f3c19960e3f6
+
+	/// Arrow label for registered users growth.
+	measure 'Label Registered Users YoY' = IF ( ISBLANK ( [Registered Users YoY %] ), BLANK (), FORMAT ( [Registered Users YoY %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+		displayFolder: 99 Formatting
+		lineageTag: d4ea53ba-59ca-4b6a-8ecd-4a0958a8f377
+
+	/// Arrow label for monthly active users growth.
+	measure 'Label MAU YoY' = IF ( ISBLANK ( [Monthly Active Users YoY %] ), BLANK (), FORMAT ( [Monthly Active Users YoY %], "▲ 0.0%;▼ 0.0%;0.0%", "en-US" ) )
+		displayFolder: 99 Formatting
+		lineageTag: a90cda87-a90a-493c-b7c1-71dea71addc7
+
+	/// Conditional formatting color for [App Transaction Share Change (pp)].
+	measure 'Color App Share Change' = IF ( ISBLANK ( [App Transaction Share Change (pp)] ), "#8A8A8A", IF ( [App Transaction Share Change (pp)] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: c9dcb56d-4cf2-4040-8131-ee1c0fb1027a
+
+	/// Conditional formatting color for [Registered Users YoY %].
+	measure 'Color Registered Users YoY' = IF ( ISBLANK ( [Registered Users YoY %] ), "#8A8A8A", IF ( [Registered Users YoY %] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: fa323b6d-75f5-4030-b32b-046407518440
+
+	/// Conditional formatting color for [Monthly Active Users YoY %].
+	measure 'Color MAU YoY' = IF ( ISBLANK ( [Monthly Active Users YoY %] ), "#8A8A8A", IF ( [Monthly Active Users YoY %] >= 0, "#1E8E3E", "#D93025" ) )
+		displayFolder: 99 Formatting
+		lineageTag: 82f377ba-fec6-45f4-94a1-3006bddd3662
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+				  Origem = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#"Coluna 1" = _t]),
+				    #"Colunas Removidas" = Table.RemoveColumns(Origem,{"Coluna 1"})
+				in
+				  #"Colunas Removidas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,56 @@
+relationship 61bda428-04bd-b682-cf7e-1eb2e9ec767a
+	fromColumn: FactDailySales.Date
+	toColumn: DimDate.Date
+
+relationship 8a911b62-5adf-aa41-1b26-6b456cbfb6f8
+	fromColumn: FactDailySales.StoreID
+	toColumn: DimStore.StoreID
+
+relationship 02f0ebc7-b50c-27b1-7fb9-d61d2dd0b105
+	fromColumn: FactCategorySales.MonthStart
+	toColumn: DimDate.Date
+
+relationship b9424883-b0f3-84e7-2e41-e41c79203461
+	fromColumn: FactCategorySales.StoreID
+	toColumn: DimStore.StoreID
+
+relationship 678391cc-817f-7af8-8dda-9ca5048d9dfa
+	fromColumn: FactCategorySales.CategoryID
+	toColumn: DimCategory.CategoryID
+
+relationship abddef88-4097-f7d3-dc42-89d46c681f47
+	fromColumn: FactStoreOpex.MonthStart
+	toColumn: DimDate.Date
+
+relationship 81c92bb7-f21f-d5cf-8a36-dab57899f638
+	fromColumn: FactStoreOpex.StoreID
+	toColumn: DimStore.StoreID
+
+relationship 8f2185f2-3ca7-1cda-ffdb-a89c4bcc230f
+	fromColumn: FactBudget.MonthStart
+	toColumn: DimDate.Date
+
+relationship 73992aba-8642-6a65-80f9-0d6187b1b37d
+	fromColumn: FactBudget.RegionID
+	toColumn: DimRegion.RegionID
+
+relationship 7d034b96-d80b-efc1-c627-3c0e72d01538
+	fromColumn: FactBudget.CategoryID
+	toColumn: DimCategory.CategoryID
+
+relationship 8f7a71e8-6ff3-6038-2738-c7b8aa908ea8
+	fromColumn: FactAppMetrics.MonthStart
+	toColumn: DimDate.Date
+
+relationship 02f2be0a-40a6-dac7-1953-1fdc00c55925
+	fromColumn: FactAppMetrics.RegionID
+	toColumn: DimRegion.RegionID
+
+relationship 5f95291d-840b-c078-8079-5624f2daa5a5
+	fromColumn: DimStore.RegionID
+	toColumn: DimRegion.RegionID
+
+relationship 33568714-a7fa-1143-d184-6a0492180a34
+	fromColumn: DimStore.FranchiseeID
+	toColumn: DimFranchisee.FranchiseeID
+

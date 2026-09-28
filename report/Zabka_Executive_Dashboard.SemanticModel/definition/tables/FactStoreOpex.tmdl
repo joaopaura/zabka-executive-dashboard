@@ -1,0 +1,108 @@
+table FactStoreOpex
+	lineageTag: 35eef09f-f7aa-488e-8f06-b31ab2f90382
+
+	column MonthStart
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: d76ed684-e4f9-4920-bdf3-b1eb98ca4cb0
+		summarizeBy: none
+		sourceColumn: MonthStart
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column StoreID
+		dataType: string
+		lineageTag: ae32c7c9-c8d6-4264-ad92-d64876807bda
+		summarizeBy: none
+		sourceColumn: StoreID
+
+		annotation SummarizationSetBy = Automatic
+
+	column OpenDays
+		dataType: int64
+		formatString: 0
+		lineageTag: b40c503f-e437-4ff7-944a-179ff1aedf64
+		summarizeBy: sum
+		sourceColumn: OpenDays
+
+		annotation SummarizationSetBy = Automatic
+
+	column RentCost
+		dataType: double
+		lineageTag: 13393b78-e744-47dc-9513-6d73ad80354f
+		summarizeBy: sum
+		sourceColumn: RentCost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column EnergyCost
+		dataType: double
+		lineageTag: be4ee752-e942-4222-b754-9655686ba2b3
+		summarizeBy: sum
+		sourceColumn: EnergyCost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column FranchiseeCommission
+		dataType: double
+		lineageTag: c6157c86-caeb-41e4-8215-1223f814a128
+		summarizeBy: sum
+		sourceColumn: FranchiseeCommission
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column MarketingCost
+		dataType: double
+		lineageTag: 20f184a0-ec43-4373-b48e-c4c7a4119005
+		summarizeBy: sum
+		sourceColumn: MarketingCost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column TechnologyCost
+		dataType: double
+		lineageTag: dd610485-163c-44eb-b7b7-450a16994d05
+		summarizeBy: sum
+		sourceColumn: TechnologyCost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column OtherOpex
+		dataType: double
+		lineageTag: 314f3e41-c17c-4718-923d-2012c254882b
+		summarizeBy: sum
+		sourceColumn: OtherOpex
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition FactStoreOpex = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ProjectPath & "Data\FactStoreOpex.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Types = Table.TransformColumnTypes(Headers, {
+				        {"MonthStart", type date}, {"StoreID", type text}, {"OpenDays", Int64.Type},
+				        {"RentCost", type number}, {"EnergyCost", type number}, {"FranchiseeCommission", type number},
+				        {"MarketingCost", type number}, {"TechnologyCost", type number}, {"OtherOpex", type number}}, "en-US")
+				in
+				    Types
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

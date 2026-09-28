@@ -1,0 +1,66 @@
+table FactBudget
+	lineageTag: ab63cfe2-0aea-4bbb-9b83-461f27fe8e5b
+
+	column MonthStart
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 3fdce854-a084-4b0b-861f-e54399372e78
+		summarizeBy: none
+		sourceColumn: MonthStart
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column RegionID
+		dataType: string
+		lineageTag: cbf6eb00-3f2f-40ff-ab5d-115813e6950d
+		summarizeBy: none
+		sourceColumn: RegionID
+
+		annotation SummarizationSetBy = Automatic
+
+	column CategoryID
+		dataType: string
+		lineageTag: 50a140c2-a460-41a8-b3b9-5de9bb4610c5
+		summarizeBy: none
+		sourceColumn: CategoryID
+
+		annotation SummarizationSetBy = Automatic
+
+	column BudgetNetSales
+		dataType: double
+		lineageTag: ae9144b1-ac07-4b39-8c63-2c444fced426
+		summarizeBy: sum
+		sourceColumn: BudgetNetSales
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column BudgetGrossProfit
+		dataType: double
+		lineageTag: 90783ad7-d6c0-417a-9040-00f353c93377
+		summarizeBy: sum
+		sourceColumn: BudgetGrossProfit
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition FactBudget = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ProjectPath & "Data\FactBudget.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Types = Table.TransformColumnTypes(Headers, {
+				        {"MonthStart", type date}, {"RegionID", type text}, {"CategoryID", type text},
+				        {"BudgetNetSales", type number}, {"BudgetGrossProfit", type number}}, "en-US")
+				in
+				    Types
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

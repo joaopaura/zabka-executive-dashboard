@@ -1,0 +1,90 @@
+table DimFranchisee
+	lineageTag: 71ed8f52-ebb8-478c-af96-37e6be629039
+
+	column FranchiseeID
+		dataType: string
+		lineageTag: 1716af24-c526-4e3d-9d33-b9d1f4abf68c
+		summarizeBy: none
+		sourceColumn: FranchiseeID
+
+		annotation SummarizationSetBy = Automatic
+
+	column JoinDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: f22ed84a-2833-4223-89ad-85619aa18df8
+		summarizeBy: none
+		sourceColumn: JoinDate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column CohortYear
+		dataType: int64
+		formatString: 0
+		lineageTag: cf9146b0-074d-46e8-ae19-59fc5b5721a7
+		summarizeBy: none
+		sourceColumn: CohortYear
+
+		annotation SummarizationSetBy = Automatic
+
+	column TenureBand
+		dataType: string
+		lineageTag: 4612a229-f11c-40d0-9458-17a6990bbc35
+		summarizeBy: none
+		sourceColumn: TenureBand
+
+		annotation SummarizationSetBy = Automatic
+
+	column Tier
+		dataType: string
+		lineageTag: c2eb6e4b-93fd-44bd-91ab-a232979ecac5
+		summarizeBy: none
+		sourceColumn: Tier
+
+		annotation SummarizationSetBy = Automatic
+
+	column NumberOfStores
+		dataType: int64
+		formatString: 0
+		lineageTag: f3ea0a8b-f169-41d0-af7c-1d8cce77a9d9
+		summarizeBy: none
+		sourceColumn: NumberOfStores
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsMultiStore
+		dataType: int64
+		formatString: 0
+		lineageTag: 1b1b35f5-4248-4953-a795-e1bc27cbf322
+		summarizeBy: none
+		sourceColumn: IsMultiStore
+
+		annotation SummarizationSetBy = Automatic
+
+	column HomeRegionID
+		dataType: string
+		lineageTag: 3acfa053-03c6-4612-b458-c4f0fdb73f8a
+		summarizeBy: none
+		sourceColumn: HomeRegionID
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimFranchisee = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ProjectPath & "Data\DimFranchisee.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Types = Table.TransformColumnTypes(Headers, {
+				        {"FranchiseeID", type text}, {"JoinDate", type date}, {"CohortYear", Int64.Type},
+				        {"TenureBand", type text}, {"Tier", type text}, {"NumberOfStores", Int64.Type},
+				        {"IsMultiStore", Int64.Type}, {"HomeRegionID", type text}}, "en-US")
+				in
+				    Types
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

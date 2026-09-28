@@ -1,0 +1,65 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "a8f785062d6e07d260e7",
+  "displayName": "Digital & Customer",
+  "displayOption": "FitToPage",
+  "height": 1080,
+  "width": 1920,
+  "objects": {
+    "background": [
+      {
+        "properties": {
+          "image": {
+            "image": {
+              "name": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Zabka_BG_03_Digital.png'"
+                  }
+                }
+              },
+              "url": {
+                "expr": {
+                  "ResourcePackageItem": {
+                    "PackageName": "RegisteredResources",
+                    "PackageType": 1,
+                    "ItemName": "Zabka_BG_03_Digital9624828281848078.png"
+                  }
+                }
+              },
+              "scaling": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Normal'"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "34bc8b120b96b5ed3001",
+      "target": "5e8e061925b2b0450961",
+      "type": "NoFilter"
+    },
+    {
+      "source": "29daae4621d7a0880b53",
+      "target": "5e8e061925b2b0450961",
+      "type": "NoFilter"
+    },
+    {
+      "source": "34bc8b120b96b5ed3001",
+      "target": "ba65430792338ed76c7d",
+      "type": "NoFilter"
+    },
+    {
+      "source": "29daae4621d7a0880b53",
+      "target": "ba65430792338ed76c7d",
+      "type": "NoFilter"
+    }
+  ]
+}
