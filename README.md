@@ -4,7 +4,7 @@
 
 > ⚠️ **Hypothetical data for executive dashboard demonstration purposes only.** Independent portfolio project, not affiliated with Żabka Group. All figures are synthetic.
 
-![Cover](docs/images/01_cover.png)
+![Cover](docs/images/01_cover.PNG)
 
 ---
 
@@ -23,17 +23,17 @@
 ## 📊 Dashboard pages
 
 ### 01 | Sales & Profitability
-![Sales & Profitability](docs/images/02_sales.png)
+![Sales & Profitability](docs/images/02_sales.PNG)
 
 6 KPIs (Net Sales, LFL Growth, Gross Margin, Store EBITDA Margin, Avg Basket, Sales vs Budget) | Monthly trend CY vs PY with YoY % | Growth bridge by region (waterfall) | Budget delivery by region with 3-band traffic lights | Category performance table (mix, growth, margin, private label, waste)
 
 ### 02 | Store Network & Franchise
-![Store Network](docs/images/03_network.png)
+![Store Network](docs/images/03_network.PNG)
 
 Store map (Azure Maps, 1,000 stores) | Quarterly openings vs closures with active store count | Regional scorecard | Sales per sqm by format | Franchisee tier performance (sales vs fresh waste)
 
 ### 03 | Digital & Customer
-![Digital & Customer](docs/images/04_digital.png)
+![Digital & Customer](docs/images/04_digital.PNG)
 
 App adoption trend (MAU and app transaction share) | App vs non-app basket | Weekly shopping heatmap (weekday x month) | App share by region and format
 
@@ -55,7 +55,7 @@ App adoption trend (MAU and app transaction share) | App vs non-app basket | Wee
 
 Star schema with 5 fact tables at different grains and 5 conformed dimensions.
 
-![Data model](docs/images/05_data_model.png)
+![Data model](docs/images/05_data_model.PNG)
 
 | Table | Grain | Rows |
 |---|---|---|
